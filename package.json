@@ -1,0 +1,57 @@
+{
+  "name": "nested-egg",
+  "private": true,
+  "version": "0.0.0",
+  "type": "module",
+  "scripts": {
+    "dev": "vite",
+    "build": "vite build",
+    "lint": "eslint .",
+    "preview": "vite preview",
+    "test": "npm --prefix server test",
+    "test:watch": "npm --prefix server run test:watch",
+    "test:cov": "npm --prefix server run test:cov"
+  },
+  "dependencies": {
+    "bootstrap": "^5.3.8",
+    "file-saver": "^2.0.5",
+    "papaparse": "^5.5.3",
+    "react": "^19.1.1",
+    "react-bootstrap": "^2.10.10",
+    "react-dom": "^19.1.1",
+    "react-icons": "^5.5.0",
+    "react-router-dom": "^7.9.3",
+    "recharts": "^3.2.1",
+    "xlsx": "^0.18.5",
+    "zod": "^4.1.11"
+  },
+  "devDependencies": {
+    "@eslint/js": "^9.36.0",
+    "@types/react": "^19.1.16",
+    "@types/react-dom": "^19.1.9",
+    "@vitejs/plugin-react": "^5.0.4",
+    "chai": "^6.2.0",
+    "chai-http": "^5.1.2",
+    "eslint": "^9.36.0",
+    "eslint-plugin-react-hooks": "^5.2.0",
+    "eslint-plugin-react-refresh": "^0.4.22",
+    "globals": "^16.4.0",
+    "mocha": "^11.7.4",
+    "nodemon": "^3.1.10",
+    "nyc": "^17.1.0",
+    "supertest": "^7.1.4",
+    "vite": "npm:rolldown-vite@7.1.14"
+  },
+  "overrides": {
+    "vite": "npm:rolldown-vite@7.1.14"
+  },
+  "description": "This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.",
+  "main": "eslint.config.js",
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "workspaces": [
+    "server",
+    "client"
+  ]
+}

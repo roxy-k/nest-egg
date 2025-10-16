@@ -1,0 +1,10 @@
+{
+  "all": true,
+  "include": ["src/**/*.js"],
+  "exclude": ["tests", "src/passport.js"],
+  "reporter": ["text", "html"],
+  "extension": [".js"],
+  "coverageProvider": "v8",
+  "instrument": false,
+  "sourceMap": false
+}

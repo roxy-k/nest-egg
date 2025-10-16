@@ -1,0 +1,122 @@
+{
+  "nav": {
+    "hello": "Bonjour",
+    "logout": "Se déconnecter",
+    "dashboard": "Tableau de bord",
+    "transactions": "Transactions",
+    "categories": "Catégories",
+    "budgets": "Budgets",
+    "reports": "Rapports",
+    "settings": "Paramètres",
+    "login": "Se connecter",
+    "signup": "Créer un compte"
+
+  },
+  "common": {
+    "add": "Ajouter",
+    "edit": "Modifier",
+    "save": "Enregistrer",
+    "cancel": "Annuler",
+    "delete": "Supprimer",
+    "name": "Nom",
+    "amount": "Montant",
+    "date": "Date",
+    "category": "Catégorie",
+    "type": "Type",
+    "search": "Rechercher",
+    "all": "Tous",
+    "loading": "Chargement…",
+    "empty": "Aucune donnée",
+    "progress": "Progression",
+     "export_excel": "Exporter en Excel"
+  },
+  "dashboard": {
+    "title": "Tableau de bord",
+    "balance": "Solde",
+    "income": "Revenus",
+    "expense": "Dépenses",
+    "monthly_spend": "Dépenses mensuelles",
+    "monthly_spend_sub": "Toutes les dépenses pour le mois en cours",
+    "budgets_current": "Budgets (mois en cours)",
+    "used_of": "Utilisé {used} sur {limit}",
+    "expense_trend": "Tendance des dépenses (6 derniers mois)",
+    "top_categories": "Catégories principales — {month}",
+    "no_data": "Aucune donnée",
+    "chart_expenses": "Dépenses"
+  },
+  "transactions": {
+    "title": "Transactions",
+    "add_title": "Ajouter une transaction",
+    "edit_title": "Modifier la transaction",
+    "type": "Type",
+    "type_all": "Tous",
+    "type_income": "revenu",
+    "type_expense": "dépense",
+    "search_placeholder": "date / catégorie / montant",
+    "all_months": "Tous les mois",
+    "all_categories": "Toutes les catégories"
+  },
+  "categories": {
+    "title": "Catégories",
+    "add_title": "Ajouter une catégorie",
+    "type": "Type",
+    "slug": "ID (slug, unique)"
+  },
+  "budgets": {
+    "title": "Budgets",
+    "set": "Définir un budget",
+    "category": "Catégorie",
+    "month": "Mois",
+    "limit": "Limite",
+    "spent": "Dépensé",
+    "empty": "Aucun budget pour le moment",
+    "select_category": "Sélectionner une catégorie"
+},
+"errors": {
+  "fill_all_fields": "Veuillez remplir tous les champs !",
+  "amount_positive": "Le montant doit être un nombre positif.",
+  "name_and_id": "Renseignez le nom et l’identifiant (slug).",
+  "slug_in_use": "Cet identifiant (slug) est déjà utilisé. Choisissez-en un autre.",
+  "limit_min": "La limite doit être au moins 0,01.",
+  "limit_positive": "La limite doit être un nombre positif."
+},
+
+  
+
+
+
+"settings": {
+    "title": "Paramètres",
+    "appearance": "Apparence et langue",
+    "theme": "Thème",
+    "light": "Clair",
+    "dark": "Sombre",
+    "language": "Langue",
+    "currency": "Devise",
+    "reset_section": "Réinitialiser les données",
+    "reset_hint": "Cela supprimera définitivement toutes vos données (transactions, budgets, catégories).",
+    "reset_all": "Tout réinitialiser",
+    "reset_confirm": "Voulez-vous vraiment tout réinitialiser ?",
+    "reset_success": "Toutes les données ont été réinitialisées.",
+    "reset_failed": "Échec de la réinitialisation des données. Veuillez réessayer."
+
+  },
+  "reports": {
+    "title": "Rapports",
+    "by_category": "Par catégorie",
+    "income_trends": "Tendances des revenus par mois",
+    "select_month": "Choisir le mois",
+    "empty_month": "Aucune dépense pour {month}",
+    "export": "Exporter",
+    "import": "Importer",
+    "transactions": "Transactions"
+  },
+  "auth": {
+    "login": "Se connecter",
+    "signup": "S'inscrire",
+    "google": "Continuer avec Google",
+    "or": "ou",
+    "signing_in": "Connexion en cours…",
+    "creating": "Création en cours…"
+  }
+}

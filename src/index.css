@@ -1,0 +1,5 @@
+/* Немного мягкого фона, чтобы UI выглядел чище */
+body { background-color: #f7f9fb; }
+/* Доп. косметика */
+[data-bs-theme="dark"] body { background-color: #0f1115; }
+.card .display-6 { letter-spacing: -0.02em; }

@@ -1,0 +1,40 @@
+{
+  "name": "server",
+  "version": "1.0.0",
+  "main": "index.js",
+  "type": "module",
+  "scripts": {
+    "dev": "nodemon src/index.js",
+    "start": "node src/index.js",
+    "test": "NODE_ENV=test mocha \"tests/**/*.test.js\" --timeout 10000",
+    "test:watch": "mocha -w \"tests/**/*.test.js\" --timeout 10000",
+    "test:cov": "NODE_ENV=test NODE_OPTIONS='--loader=@istanbuljs/esm-loader-hook' nyc -r text -r html npm run test"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "description": "",
+  "dependencies": {
+    "bcryptjs": "^3.0.2",
+    "cookie-parser": "^1.4.7",
+    "cors": "^2.8.5",
+    "dotenv": "^17.2.3",
+    "express": "^5.1.0",
+    "express-validator": "^7.2.1",
+    "jsonwebtoken": "^9.0.2",
+    "mongoose": "^8.19.0",
+    "passport": "^0.7.0",
+    "passport-google-oauth20": "^2.0.0",
+    "zod": "^4.1.11"
+  },
+  "devDependencies": {
+    "@istanbuljs/esm-loader-hook": "^0.3.0",
+    "chai": "^4.3.0",
+    "mocha": "^10.0.0",
+    "nodemon": "^3.1.10",
+    "nyc": "^15.1.0",
+    "supertest": "^6.3.0"
+  },
+  "private": true
+}
+
