@@ -20,7 +20,6 @@ import { lazy, Suspense } from "react";
 const Reports = lazy(() => import("./pages/Reports.jsx"));
 
 
-// Защита маршрутов
 function PrivateRoute({ children }) {
   const { user, loading } = useAuth();
   if (loading) {
@@ -39,7 +38,6 @@ export default function App() {
        <Container className="py-4">
         <Suspense fallback={<div className="text-center p-5">Loading…</div>}>
           <Routes>
-             {/* редирект на дашборд */}
              <Route path="/" element={<Navigate to="/dashboard" replace />} />
 
              <Route
@@ -52,7 +50,6 @@ export default function App() {
              />
           <Route path="/" element={<Navigate to="/dashboard" replace />} />
 
-          {/* защищённые маршруты */}
           <Route
             path="/dashboard"
             element={
@@ -112,7 +109,6 @@ export default function App() {
             element={loading ? <div className="text-center p-5">Loading…</div> : user ? <Navigate to="/dashboard" /> : <Register />}
           />
 
-          {/* 404 */}
           <Route path="*" element={<NotFound />} />
         </Routes>
       </Suspense>

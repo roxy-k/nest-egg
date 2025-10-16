@@ -5,7 +5,7 @@ import { useTransactions } from "../context/TransactionsContext.jsx";
 import { useBudgets } from "../context/BudgetsContext.jsx";
 import { useSettings } from "../context/SettingsContext.jsx";
 
-const monthKey = (isoDate) => isoDate?.slice(0, 7); // "YYYY-MM" из "YYYY-MM-DD"
+const monthKey = (isoDate) => isoDate?.slice(0, 7); 
 
 export default function Budgets() {
   const { categories } = useCategories();

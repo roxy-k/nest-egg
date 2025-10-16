@@ -20,7 +20,6 @@ export default function Categories() {
   };
   const onChange = (e) => {
     const { name, value } = e.target;
-    // Нормализуем только поле slug/id
     if (name === "id") {
       const slug = value
         .toLowerCase()

@@ -10,7 +10,6 @@ const router = Router();
 const resetHandler = async (req, res) => {  
   try {
     const userId = req.user?.id || null;
-    // универсальный фильтр: поддержим обе схемы — user, ownerKey или legacy userId
     const filter = userId
       ? {
           $or: [

@@ -4,10 +4,10 @@ const BudgetSchema = new mongoose.Schema(
   {
     id: { type: String, unique: true, sparse: true },
     ownerKey: { type: String, index: true, required: true },
-    user: { type: mongoose.Schema.Types.ObjectId, ref: "User" }, // опц.
+    user: { type: mongoose.Schema.Types.ObjectId, ref: "User" }, 
 
-    categoryId: { type: String, required: true }, // slug категории
-    month: { type: String, required: true },      // YYYY-MM
+    categoryId: { type: String, required: true }, 
+    month: { type: String, required: true },      
     limit: { type: Number, required: true, min: 0.01 },
   },
   { timestamps: true }

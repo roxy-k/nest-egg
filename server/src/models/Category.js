@@ -4,7 +4,7 @@ export const SHARED_OWNER_KEY = "__shared__";
 
 const CategorySchema = new mongoose.Schema(
   {
-    id: { type: String, required: true, trim: true }, // slug (например "salary")
+    id: { type: String, required: true, trim: true }, 
     name: { type: String, required: true, trim: true },
     type: { type: String, enum: ["income", "expense"], required: true },
     user: { type: mongoose.Schema.Types.ObjectId, ref: "User", index: true, default: undefined },

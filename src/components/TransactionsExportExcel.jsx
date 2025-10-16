@@ -9,7 +9,7 @@ import { useSettings } from "../context/SettingsContext.jsx";
 export default function TransactionsExportExcel() {
   const { transactions } = useTransactions();
   const { categories } = useCategories();
-  const { t } = useSettings(); // <— добавили переводчик
+  const { t } = useSettings(); 
 
   const catNameById = (id) => {
     const c = categories.find((x) => (x._id || x.id) === id || x.id === id);
@@ -17,9 +17,7 @@ export default function TransactionsExportExcel() {
   };
 
   const onExport = () => {
-    // избегаем конфликта имён: используем tx вместо t
     const rows = transactions.map((tx) => ({
-      // если нет таких ключей в переводах, можешь оставить англ. строки
       [t("common.date") || "Date"]: tx.date || "",
       [t("common.category") || "Category"]: catNameById(tx.categoryId),
       [t("common.type") || "Type"]:

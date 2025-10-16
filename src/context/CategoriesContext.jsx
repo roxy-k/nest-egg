@@ -63,7 +63,6 @@ const text = await res.text();
       const key = saved._id || saved.id;
       const filtered = prev.filter((item) => (item._id || item.id) !== key);
       const next = [...filtered, saved];
-      // стабильная сортировка по имени
       return next.sort((a, b) => (a.name || "").localeCompare(b.name || ""));
     });
   };
