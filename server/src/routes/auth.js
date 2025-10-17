@@ -6,19 +6,24 @@ import passport from "../passport.js";
 import User from "../models/User.js";
 
 const router = express.Router();
+
 const CLIENT =
-  process.env.CLIENT_URL || "https://your-nest-egg.onrender.com";
+  process.env.CLIENT_URL ||
   process.env.CLIENT_ORIGIN ||
   process.env.FRONTEND_URL ||
-  "http://localhost:5173";
+  "https://your-nest-egg.onrender.com" || 
+  "http://localhost:5173"; 
+
+
 const JWT_SECRET = process.env.JWT_SECRET || "dev_secret";
 const cookieOptions = {
   httpOnly: true,
-  secure: process.env.NODE_ENV === "production",
-  sameSite: process.env.NODE_ENV === "production" ? "strict" : "lax",
-  maxAge: 7 * 24 * 60 * 60 * 1000, // 7 days
+  secure: process.env.NODE_ENV === "production", // важно для HTTPS
+  sameSite: process.env.NODE_ENV === "production" ? "none" : "lax", // 👈 было "strict"
+  maxAge: 7 * 24 * 60 * 60 * 1000,
   path: "/",
 };
+
 
 const registerSchema = z.object({
   email: z

@@ -12,8 +12,9 @@ export function AuthProvider({ children }) {
   const [loading, setLoading] = useState(true);
   const userRef = useRef(null);
 
-  const refresh = useCallback(async ({ silent = false } = {}) => {
-    if (!silent) {
+ const normalizeUser = (d) => (d && typeof d === "object" && "user" in d ? d.user : d);
+
+  const refresh = useCallback(async ({ silent = false } = {}) => {    if (!silent) {
       setLoading(true);
     }
     try {
@@ -26,9 +27,10 @@ export function AuthProvider({ children }) {
         return userRef.current;
       }
       if (!res.ok) throw new Error(data.error || "Unauthorized");
-      setUser(data);
-      userRef.current = data;
-      return data;
+          const u = normalizeUser(data);
+     setUser(u);
+      userRef.current = u;
+      return u;
     } catch (err) {
       console.warn("Auth refresh failed:", err.message);
       setUser(null);
@@ -41,8 +43,12 @@ export function AuthProvider({ children }) {
     }
   }, []);
 
-  useEffect(() => {
+useEffect(() => {
+   const ac = new AbortController();
     refresh();
+    return () => {
+      ac.abort();
+    };
   }, [refresh]);
 
   const login = async ({ email, password }) => {
@@ -54,9 +60,10 @@ export function AuthProvider({ children }) {
     });
     const data = await res.json().catch(() => ({}));
     if (!res.ok) throw new Error(data.error || "Login failed");
-    setUser(data.user);
-    userRef.current = data.user;
-    return data.user;
+   const u = normalizeUser(data);
+    setUser(u);
+    userRef.current = u;
+    return u;
   };
 
   const register = async ({ email, password, name = "" }) => {

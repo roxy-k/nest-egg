@@ -97,7 +97,6 @@ async function resolveWithUser(decoded, req, res, next) {
 }
 
 export async function requireAuth(req, res, next) {
-  // 🔓 Тестовый байпас авторизации для Mocha/Chai:
   if (process.env.TEST_BYPASS_AUTH === "1") {
     req.user = { id: "test-user-id" }; // фиктивный пользователь для тестов
     return next();

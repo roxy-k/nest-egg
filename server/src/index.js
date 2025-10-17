@@ -16,8 +16,8 @@ const app = express();
 
 // --- CORS +  middleware 
 const whitelist = [
-  process.env.CLIENT_URL,          
-  "http://localhost:5173",         
+  process.env.CLIENT_URL,      
+  "http://localhost:5173",
 ].filter(Boolean);
 
 app.use(cors({
@@ -25,8 +25,9 @@ app.use(cors({
     if (!origin || whitelist.includes(origin)) return cb(null, true);
     return cb(new Error("Not allowed by CORS"));
   },
-  credentials: true,
+  credentials: true, 
 }));
+
 app.use(express.json());
 app.use(cookieParser());
 app.set("trust proxy", 1);
