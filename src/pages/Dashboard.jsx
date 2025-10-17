@@ -115,7 +115,7 @@ const { t, formatCurrency } = useSettings()
   return (
     <>
 <h1 className="mb-4">{t("dashboard.title")}</h1>
-+ {loadingAll && <div className="text-muted mb-3">{t("common.loading")}</div>}
+ {loadingAll && <div className="text-muted mb-3">{t("common.loading")}</div>}
       <Row className="g-3">
         <Col md={4}>
           <StatCard

@@ -7,7 +7,7 @@ import User from "../models/User.js";
 
 const router = express.Router();
 const CLIENT =
-  process.env.CLIENT_URL ||
+  process.env.CLIENT_URL || "https://your-nest-egg.onrender.com";
   process.env.CLIENT_ORIGIN ||
   process.env.FRONTEND_URL ||
   "http://localhost:5173";
