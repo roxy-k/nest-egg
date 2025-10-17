@@ -5,7 +5,7 @@ import { z } from "zod";
 import passport from "../passport.js";
 import User from "../models/User.js";
 
-const router = Router();
+const router = express.Router();
 
 const CLIENT =
   process.env.CLIENT_URL ||
