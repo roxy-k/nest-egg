@@ -5,23 +5,21 @@ import { z } from "zod";
 import passport from "../passport.js";
 import User from "../models/User.js";
 
-const router = express.Router();
+const router = Router();
 
 const CLIENT =
   process.env.CLIENT_URL ||
-  process.env.CLIENT_ORIGIN ||
-  process.env.FRONTEND_URL ||
-  "https://your-nest-egg.onrender.com" || 
-  "http://localhost:5173"; 
+  "https://your-nest-egg.onrender.com";
+
 
 
 const JWT_SECRET = process.env.JWT_SECRET || "dev_secret";
 const cookieOptions = {
   httpOnly: true,
-  secure: process.env.NODE_ENV === "production", // важно для HTTPS
-  sameSite: process.env.NODE_ENV === "production" ? "none" : "lax", // 👈 было "strict"
-  maxAge: 7 * 24 * 60 * 60 * 1000,
+  secure: process.env.NODE_ENV === "production",
+  sameSite: process.env.NODE_ENV === "production" ? "none" : "lax",
   path: "/",
+  maxAge: 7 * 24 * 60 * 60 * 1000,
 };
 
 
@@ -109,33 +107,39 @@ router.post("/register", async (req, res) => {
 });
 
 router.post("/login", async (req, res) => {
-  const parsed = loginSchema.safeParse(req.body);
-  if (!parsed.success) {
-    const msg = parsed.error.errors?.[0]?.message || "Invalid credentials";
-    return res.status(400).json({ error: msg });
-  }
-
-  const { email, password } = parsed.data;
-
   try {
-    const user = await User.findOne({ email });
-    if (!user || !user.passwordHash) {
-      return res.status(401).json({ error: "Invalid email or password." });
+    const { email, password } = req.body || {};
+    if (!email || !password) {
+      return res.status(400).json({ error: "Email and password are required" });
     }
 
-    const ok = await bcrypt.compare(password, user.passwordHash);
+    const user = await User.findOne({ email }).lean(false);
+    if (!user) {
+      return res.status(401).json({ error: "Invalid credentials" });
+    }
+
+    const ok = await bcrypt.compare(password, user.password);
     if (!ok) {
-      return res.status(401).json({ error: "Invalid email or password." });
+      return res.status(401).json({ error: "Invalid credentials" });
     }
 
-    const token = signToken(user);
+    const token = jwt.sign(
+      { id: user.id, email: user.email, name: user.name || "" },
+      process.env.JWT_SECRET,
+      { expiresIn: "7d" }
+    );
+
     res.cookie("token", token, cookieOptions);
-    return res.json({ user: buildUserPayload(user) });
+
+    return res.status(200).json({
+      user: { id: user.id, email: user.email, name: user.name || "" },
+    });
   } catch (err) {
-    console.error("LOGIN ERROR:", err);
-    return res.status(500).json({ error: "Login failed" });
+    console.error("Login error:", err);
+    return res.status(500).json({ error: "Server error" });
   }
 });
+
 
 router.post("/logout", (_req, res) => {
   res.clearCookie("token", {
@@ -154,16 +158,16 @@ router.get(
 
 router.get(
   "/google/callback",
-  passport.authenticate("google", {
-    session: false,
-    failureRedirect: CLIENT + "/login?err=google",
-  }),
-  (req, res) => {
-    const token = signToken(req.user);
+  passport.authenticate("google", { session: false, failureRedirect: `${CLIENT}/login` }),
+  async (req, res) => {
+    const user = req.user; 
+    const token = jwt.sign({ id: user.id, email: user.email, name: user.name || "" }, process.env.JWT_SECRET, { expiresIn: "7d" });
+
     res.cookie("token", token, cookieOptions);
-    res.redirect(`${CLIENT}/oauth`);
+    return res.redirect(`${CLIENT}/dashboard`);
   }
 );
+
 
 router.get("/me", (req, res) => {
   const authHeader = req.headers.authorization;
