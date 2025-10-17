@@ -14,9 +14,10 @@ import passport from "./passport.js"
 const app = express();
 
 
-// --- CORS +  middleware 
+const FRONT = process.env.CLIENT_URL || "https://your-nest-egg.onrender.com";
+
 const whitelist = [
-  process.env.CLIENT_URL,      
+  FRONT,
   "http://localhost:5173",
 ].filter(Boolean);
 
