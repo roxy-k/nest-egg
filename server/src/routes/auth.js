@@ -157,12 +157,19 @@ router.post("/logout", (_req, res) => {
 
 router.get(
   "/google",
-  passport.authenticate("google", { scope: ["profile", "email"] })
+  passport.authenticate("google", {
+    scope: ["profile", "email"],
+    callbackURL: "https://nest-egg-tuwf.onrender.com/api/auth/google/callback",
+  })
 );
+
 
 router.get(
   "/google/callback",
-  passport.authenticate("google", { session: false, failureRedirect: `${CLIENT}/login` }),
+  passport.authenticate("google", {
+    session: false,
+    failureRedirect: `${CLIENT}/login`,
+  }),
   async (req, res) => {
     const user = req.user; 
     const token = jwt.sign({ id: user.id, email: user.email, name: user.name || "" }, process.env.JWT_SECRET, { expiresIn: "7d" });
