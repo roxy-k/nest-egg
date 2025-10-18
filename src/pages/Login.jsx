@@ -6,6 +6,9 @@ import { useSettings } from "../context/SettingsContext.jsx"
 
 const BASE = import.meta.env.VITE_API_URL || "http://localhost:4000/api";
 
+const googleSignIn = () => {
+  window.location.href = `${BASE}/auth/google`;
+};
 export default function Login() {
   const { login, user } = useAuth();
   const navigate = useNavigate();

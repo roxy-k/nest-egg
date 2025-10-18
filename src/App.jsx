@@ -40,16 +40,7 @@ export default function App() {
           <Routes>
              <Route path="/" element={<Navigate to="/dashboard" replace />} />
 
-             <Route
-               path="/reports"
-               element={
-                 <PrivateRoute>
-                   <Reports />
-                 </PrivateRoute>
-               }
-             />
-          <Route path="/" element={<Navigate to="/dashboard" replace />} />
-
+           
           <Route
             path="/dashboard"
             element={

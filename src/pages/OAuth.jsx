@@ -11,18 +11,27 @@ export default function OAuth() {
   useEffect(() => {
     let canceled = false;
     (async () => {
-      try {
-        const user = await refresh({ silent: true });
-        if (!canceled) {
-          if (user) {
-            navigate("/dashboard", { replace: true });
-          } else {
-            navigate("/login?err=oauth", { replace: true });
-          }
-        }
-      } catch {
-        if (!canceled) navigate("/login?err=oauth", { replace: true });
-      }
+const m = (window.location.hash || "").match(/token=([^&]+)/);
+     if (m && m[1]) {
+       try {
+         localStorage.setItem("jwt", m[1]);
+       } catch {}
+       window.history.replaceState(null, "", window.location.pathname + window.location.search);
+       navigate("/dashboard", { replace: true });
+       return; 
+     }
+     try {
+       const user = await refresh({ silent: true });
+       if (!canceled) {
+         if (user) {
+           navigate("/dashboard", { replace: true });
+         } else {
+           navigate("/login?err=oauth", { replace: true });
+         }
+       }
+     } catch {
+       if (!canceled) navigate("/login?err=oauth", { replace: true });
+     }
     })();
     return () => {
       canceled = true;

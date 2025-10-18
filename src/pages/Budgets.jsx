@@ -243,7 +243,7 @@ alert(t("errors.limit_min"))
             <Form.Group className="mb-3">
               <Form.Label>{t("budgets.category")}</Form.Label>
               <Form.Select name="categoryId" value={form.categoryId} onChange={onChange}>
-+ <option value="">{t("budgets.select_category")}</option>
+ <option value="">{t("budgets.select_category")}</option>
   {categories.map((c) => (
     <option
       key={String(c.id || c._id)}

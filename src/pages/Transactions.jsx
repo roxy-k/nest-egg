@@ -276,7 +276,7 @@ bv = (categories.find((c) => (c._id || c.id) === b.categoryId)?.name || b.catego
               <Form.Label>{t("common.category")}</Form.Label>             
                <Form.Select name="categoryId" value={form.categoryId} onChange={onChange}>
             <option value="">{t("transactions.all_categories")}</option>               
-             + {categories.map((c) => (
+              {categories.map((c) => (
    <option key={c.id} value={c.id}>
      {c.name}
    </option>
