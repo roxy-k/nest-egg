@@ -17,42 +17,47 @@ export function AuthProvider({ children }) {
   const [loading, setLoading] = useState(true);
   const userRef = useRef(null);
 
- const normalizeUser = (d) => (d && typeof d === "object" && "user" in d ? d.user : d);
+  const normalizeUser = (d) => (d && typeof d === "object" && "user" in d ? d.user : d);
 
-  const refresh = useCallback(async ({ silent = false } = {}) => {    if (!silent) {
-      setLoading(true);
-    }
-    try {
-   const res = await fetch(`${BASE}/auth/me`, {
-        credentials: "include",
-        cache: "no-store",
-        headers: {
-          Authorization: `Bearer ${getToken()}`,
-        },
-      });
-      const data = await res.json().catch(() => ({}));
-      if (res.status === 304 && userRef.current) {
-        return userRef.current;
-      }
-      if (!res.ok) throw new Error(data.error || "Unauthorized");
-          const u = normalizeUser(data);
-     setUser(u);
-      userRef.current = u;
-      return u;
-    } catch (err) {
-      console.warn("Auth refresh failed:", err.message);
-      setUser(null);
-      userRef.current = null;
-      return null;
-    } finally {
+  const refresh = useCallback(
+    async ({ silent = false } = {}) => {
       if (!silent) {
-        setLoading(false);
+        setLoading(true);
       }
-    }
-  }, []);
+      try {
+        const token = getToken();
+        const headers = token ? { Authorization: `Bearer ${token}` } : {};
+        const res = await fetch(`${BASE}/auth/me`, {
+          credentials: "include",
+          cache: "no-store",
+          headers,
+        });
+        const data = await res.json().catch(() => ({}));
+        if (res.status === 304 && userRef.current) {
+          return userRef.current;
+        }
+        if (!res.ok) throw new Error(data.error || "Unauthorized");
 
-useEffect(() => {
-   const ac = new AbortController();
+        const u = normalizeUser(data);
+        setUser(u);
+        userRef.current = u;
+        return u;
+      } catch (err) {
+        console.warn("Auth refresh failed:", err.message);
+        setUser(null);
+        userRef.current = null;
+        return null;
+      } finally {
+        if (!silent) {
+          setLoading(false);
+        }
+      }
+    },
+    []
+  );
+
+  useEffect(() => {
+    const ac = new AbortController();
     refresh();
     return () => {
       ac.abort();
@@ -60,16 +65,19 @@ useEffect(() => {
   }, [refresh]);
 
   const login = async ({ email, password }) => {
-      const res = await fetch(`${BASE}/auth/login`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        credentials: "include",
-        body: JSON.stringify({ email, password }),
+    const res = await fetch(`${BASE}/auth/login`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      credentials: "include",
+      body: JSON.stringify({ email, password }),
     });
     const data = await res.json().catch(() => ({}));
     if (!res.ok) throw new Error(data.error || "Login failed");
-if (data.token) setToken(data.token);          // ← Сохраняем токен (Safari)
-   const u = normalizeUser(data);    setUser(u);
+    if (data.token) {
+      setToken(data.token); // Keep Safari in sync
+    }
+    const u = normalizeUser(data);
+    setUser(u);
     userRef.current = u;
     return u;
   };
@@ -83,10 +91,13 @@ if (data.token) setToken(data.token);          // ← Сохраняем ток�
     });
     const data = await res.json().catch(() => ({}));
     if (!res.ok) throw new Error(data.error || "Registration failed");
-    if (data.token) setToken(data.token);     
-    setUser(data.user);
-    userRef.current = data.user;
-    return data.user;
+    if (data.token) {
+      setToken(data.token);
+    }
+    const u = normalizeUser(data);
+    setUser(u);
+    userRef.current = u;
+    return u;
   };
 
   const logout = async () => {

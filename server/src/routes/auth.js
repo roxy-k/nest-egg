@@ -164,16 +164,17 @@ router.get("/google",
 
 router.get(
   "/google/callback",
-  passport.authenticate("google", { session: false, failureRedirect: process.env.CLIENT_URL + "/login?err=google" }),
+  passport.authenticate("google", { session: false, failureRedirect: `${CLIENT}/login?err=google` }),
   async (req, res) => {
     try {
       const user = req.user;
-      const token = jwt.sign({ sub: user.id }, process.env.JWT_SECRET, { expiresIn: "7d" });
+      const token = signToken(user);
+      res.cookie("token", token, cookieOptions);
 
-      const targetBase = (process.env.CLIENT_URL || "").replace(/\/$/, "");
+      const targetBase = (CLIENT || "").replace(/\/$/, "");
       return res.redirect(`${targetBase}/oauth#token=${encodeURIComponent(token)}`);
     } catch (e) {
-      return res.redirect((process.env.CLIENT_URL || "") + "/login?err=google");
+      return res.redirect((CLIENT || "") + "/login?err=google");
     }
   }
 );
