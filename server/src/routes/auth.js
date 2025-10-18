@@ -14,13 +14,17 @@ const CLIENT =
 
 
 const JWT_SECRET = process.env.JWT_SECRET || "dev_secret";
+
+const isProd = process.env.NODE_ENV === "production";
+
 const cookieOptions = {
   httpOnly: true,
-  secure: process.env.NODE_ENV === "production",
-  sameSite: process.env.NODE_ENV === "production" ? "none" : "lax",
+  secure: isProd,
+  sameSite: isProd ? "none" : "lax",
   path: "/",
   maxAge: 7 * 24 * 60 * 60 * 1000,
 };
+
 
 
 const registerSchema = z.object({
@@ -114,26 +118,26 @@ router.post("/login", async (req, res) => {
     }
 
     const user = await User.findOne({ email }).lean(false);
-    if (!user) {
-      return res.status(401).json({ error: "Invalid credentials" });
-    }
+if (!user) {
+  return res.status(401).json({ error: "Invalid credentials" });
+}
 
-    const ok = await bcrypt.compare(password, user.password);
-    if (!ok) {
-      return res.status(401).json({ error: "Invalid credentials" });
-    }
+const ok = await bcrypt.compare(password, user.passwordHash);
+if (!ok) {
+  return res.status(401).json({ error: "Invalid credentials" });
+}
 
-    const token = jwt.sign(
-      { id: user.id, email: user.email, name: user.name || "" },
-      process.env.JWT_SECRET,
-      { expiresIn: "7d" }
-    );
+const token = jwt.sign(
+  { id: user.id, email: user.email, name: user.name || "" },
+  JWT_SECRET,
+  { expiresIn: "7d" }
+);
 
-    res.cookie("token", token, cookieOptions);
+res.cookie("token", token, cookieOptions);
+return res.status(200).json({
+  user: { id: user.id, email: user.email, name: user.name || "" },
+});
 
-    return res.status(200).json({
-      user: { id: user.id, email: user.email, name: user.name || "" },
-    });
   } catch (err) {
     console.error("Login error:", err);
     return res.status(500).json({ error: "Server error" });

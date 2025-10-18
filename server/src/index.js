@@ -18,13 +18,20 @@ if (process.env.NODE_ENV === "production") {
   app.set("trust proxy", 1);
 }
 
-const FRONT = process.env.CLIENT_URL || "https://your-nest-egg.onrender.com";
-app.use(
-  cors({
-    origin: FRONT,
-    credentials: true,
-  })
-);
+const whitelist = [
+  process.env.CLIENT_URL,
+  "https://your-nest-egg.onrender.com",
+  "http://localhost:5173"
+].filter(Boolean);
+
+app.use(cors({
+  origin: (origin, cb) => {
+    if (!origin || whitelist.includes(origin)) return cb(null, true);
+    cb(new Error("Not allowed by CORS"));
+  },
+  credentials: true,
+}));
+
 
 app.use(express.json());
 app.use(cookieParser());
