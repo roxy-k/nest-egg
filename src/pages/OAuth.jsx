@@ -17,8 +17,13 @@ const m = (window.location.hash || "").match(/token=([^&]+)/);
          localStorage.setItem("jwt", m[1]);
        } catch {}
        window.history.replaceState(null, "", window.location.pathname + window.location.search);
-       navigate("/dashboard", { replace: true });
-       return; 
+const ok = await refresh({ silent: true }).catch(() => null);
+ if (ok) {
+   navigate("/dashboard", { replace: true });
+ } else {
+   navigate("/login?err=oauth", { replace: true });
+ }
+ return; 
      }
      try {
        const user = await refresh({ silent: true });

@@ -156,47 +156,34 @@ router.post("/logout", (_req, res) => {
   res.json({ ok: true });
 });
 
+
+
+router.get("/google",
+  passport.authenticate("google", { scope: ["profile", "email"], prompt: "select_account" })
+);
+
 router.get(
-  "/google",
-  passport.authenticate("google", {
-    scope: ["profile", "email"],
-  })
+  "/google/callback",
+  passport.authenticate("google", { session: false, failureRedirect: process.env.CLIENT_URL + "/login?err=google" }),
+  async (req, res) => {
+    try {
+      const user = req.user;
+      const token = jwt.sign({ sub: user.id }, process.env.JWT_SECRET, { expiresIn: "7d" });
+
+      const targetBase = (process.env.CLIENT_URL || "").replace(/\/$/, "");
+      return res.redirect(`${targetBase}/oauth#token=${encodeURIComponent(token)}`);
+    } catch (e) {
+      return res.redirect((process.env.CLIENT_URL || "") + "/login?err=google");
+    }
+  }
 );
 
 
-router.get("/google/callback", (req, res, next) => {
-  passport.authenticate("google", { session: false }, async (err, user, info) => {
-    try {
-      if (err) {
-        console.error("Google auth error:", err);
-        return res.redirect(`${CLIENT}/login?oauth=server_error`);
-      }
-      if (!user) {
-        console.warn("Google auth no user. Info:", info);
-        return res.redirect(`${CLIENT}/login?oauth=no_user`);
-      }
-
-      const token = jwt.sign(
-        { id: user.id, email: user.email, name: user.name || "" },
-        JWT_SECRET,
-        { expiresIn: "7d" }
-      );
-
-      res.cookie("token", token, cookieOptions);
-const url = new URL(`${CLIENT}/dashboard`);
-url.hash = `token=${token}`;       
-return res.redirect(url.toString());
-
-    } catch (e) {
-      console.error("Google callback handler failed:", e);
-      return res.redirect(`${CLIENT}/login?oauth=callback_failed`);
-    }
-  })(req, res, next);
-});
+   
+    
 
 
-
-router.get("/me", (req, res) => {
+router.get("/me", async (req, res) => {
   const authHeader = req.headers.authorization;
   const bearerToken =
     authHeader && authHeader.startsWith("Bearer ") ? authHeader.split(" ")[1] : null;
@@ -207,7 +194,15 @@ router.get("/me", (req, res) => {
 
   try {
     const decoded = jwt.verify(token, JWT_SECRET);
-    return res.json({ id: decoded.id, email: decoded.email, name: decoded.name });
+    const uid = decoded.id || decoded.sub;          
+    if (!uid) return res.status(401).json({ error: "Invalid token" });
+    const user = decoded.email && decoded.name
+      ? { id: uid, email: decoded.email, name: decoded.name }
+      : await User.findById(uid).lean();
+    if (!user) return res.status(401).json({ error: "Unauthorized" });
+    return res.json({
+      user: { id: String(user._id || user.id || uid), email: user.email || "", name: user.name || "" }
+    });  
   } catch (err) {
     console.error("❌ Invalid token:", err.message);
     return res.status(401).json({ error: "Invalid token" });

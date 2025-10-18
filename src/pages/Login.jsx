@@ -5,10 +5,8 @@ import { useAuth } from "../context/AuthContext.jsx";
 import { useSettings } from "../context/SettingsContext.jsx"
 
 const BASE = import.meta.env.VITE_API_URL || "http://localhost:4000/api";
+const googleSignIn = () => { window.location.href = `${BASE}/auth/google`; };
 
-const googleSignIn = () => {
-  window.location.href = `${BASE}/auth/google`;
-};
 export default function Login() {
   const { login, user } = useAuth();
   const navigate = useNavigate();
@@ -20,7 +18,7 @@ export default function Login() {
 useEffect(() => {
   const m = (window.location.hash || "").match(/token=([^&]+)/);
   if (m && m[1]) {
-    localStorage.setItem("jwt", m[1]);    // сохранить токен
+    localStorage.setItem("jwt", m[1]);    
     window.history.replaceState(null, "", window.location.pathname + window.location.search);
     navigate("/dashboard");
   }

@@ -11,8 +11,11 @@ import seedRoutes, { ensureDefaultCategories } from "./routes/seed.js";
 import resetRoutes from "./routes/reset.js";
 import { connectDB } from "./db.js";
 import passport from "./passport.js";
+import authRoutes from "./routes/auth.js";
 
 const app = express();
+
+
 
 
 if (process.env.NODE_ENV === "production") {
@@ -37,6 +40,7 @@ app.use(cors({
 app.use(express.json());
 app.use(cookieParser());
 app.use(passport.initialize());
+app
 
 
 app.get("/health", (_req, res) => res.json({ ok: true }));
