@@ -14,13 +14,15 @@ export default function Login() {
   const [loading, setLoading] = useState(false);
   const { t } = useSettings();
 
-  useEffect(() => {
-    if (user) navigate("/dashboard");
-  }, [user, navigate]);
+useEffect(() => {
+  const m = (window.location.hash || "").match(/token=([^&]+)/);
+  if (m && m[1]) {
+    localStorage.setItem("jwt", m[1]);    // сохранить токен
+    window.history.replaceState(null, "", window.location.pathname + window.location.search);
+    navigate("/dashboard");
+  }
+}, [navigate]);
 
-  const googleSignIn = () => {
-    window.location.href = `${BASE}/auth/google`;
-  };
 
   const onSubmit = async (e) => {
     e.preventDefault();

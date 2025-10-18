@@ -3,6 +3,11 @@ import React, { createContext, useCallback, useContext, useEffect, useRef, useSt
 const AuthContext = createContext();
 const BASE = import.meta.env.VITE_API_URL || "http://localhost:4000/api";
 
+const getToken = () => {
+  try { return localStorage.getItem("jwt") || ""; } catch { return ""; }
+};
+const setToken = (t) => { try { if (t) localStorage.setItem("jwt", t); } catch {} };
+const clearToken = () => { try { localStorage.removeItem("jwt"); } catch {} };
 export function useAuth() {
   return useContext(AuthContext);
 }
@@ -18,9 +23,12 @@ export function AuthProvider({ children }) {
       setLoading(true);
     }
     try {
-      const res = await fetch(`${BASE}/auth/me`, {
+   const res = await fetch(`${BASE}/auth/me`, {
         credentials: "include",
         cache: "no-store",
+        headers: {
+          Authorization: `Bearer ${getToken()}`,
+        },
       });
       const data = await res.json().catch(() => ({}));
       if (res.status === 304 && userRef.current) {
@@ -60,8 +68,8 @@ useEffect(() => {
     });
     const data = await res.json().catch(() => ({}));
     if (!res.ok) throw new Error(data.error || "Login failed");
-   const u = normalizeUser(data);
-    setUser(u);
+if (data.token) setToken(data.token);          // ← Сохраняем токен (Safari)
+   const u = normalizeUser(data);    setUser(u);
     userRef.current = u;
     return u;
   };
@@ -75,6 +83,7 @@ useEffect(() => {
     });
     const data = await res.json().catch(() => ({}));
     if (!res.ok) throw new Error(data.error || "Registration failed");
+    if (data.token) setToken(data.token);     
     setUser(data.user);
     userRef.current = data.user;
     return data.user;
@@ -87,6 +96,7 @@ useEffect(() => {
         credentials: "include",
       });
     } finally {
+      clearToken();
       setUser(null);
       userRef.current = null;
     }

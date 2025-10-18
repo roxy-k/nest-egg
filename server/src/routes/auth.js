@@ -103,7 +103,7 @@ router.post("/register", async (req, res) => {
 
     const token = signToken(user);
     res.cookie("token", token, cookieOptions);
-    return res.status(201).json({ user: buildUserPayload(user) });
+    return res.status(201).json({ user: buildUserPayload(user), token });
   } catch (err) {
     console.error("REGISTER ERROR:", err);
     return res.status(500).json({ error: "Registration failed" });
@@ -136,6 +136,7 @@ const token = jwt.sign(
 res.cookie("token", token, cookieOptions);
 return res.status(200).json({
   user: { id: user.id, email: user.email, name: user.name || "" },
+  token,
 });
 
   } catch (err) {
@@ -159,7 +160,6 @@ router.get(
   "/google",
   passport.authenticate("google", {
     scope: ["profile", "email"],
-    callbackURL: "https://nest-egg-tuwf.onrender.com/api/auth/google/callback",
   })
 );
 
@@ -183,7 +183,10 @@ router.get("/google/callback", (req, res, next) => {
       );
 
       res.cookie("token", token, cookieOptions);
-      return res.redirect(`${CLIENT}/dashboard`);
+const url = new URL(`${CLIENT}/dashboard`);
+url.hash = `token=${token}`;       
+return res.redirect(url.toString());
+
     } catch (e) {
       console.error("Google callback handler failed:", e);
       return res.redirect(`${CLIENT}/login?oauth=callback_failed`);
