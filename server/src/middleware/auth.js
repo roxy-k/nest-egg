@@ -2,6 +2,17 @@
 import jwt from "jsonwebtoken";
 import User from "../models/User.js";
 
+const isProd = process.env.NODE_ENV === "production";
+
+const cookieOptions = {
+  httpOnly: true,
+  secure: isProd,
+  sameSite: isProd ? "none" : "lax",
+  path: "/",
+  
+};
+
+
 const JWT_SECRET = process.env.JWT_SECRET || "dev_secret";
 
 function normalizeId(value) {

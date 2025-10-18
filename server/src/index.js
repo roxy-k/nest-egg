@@ -22,7 +22,6 @@ if (process.env.NODE_ENV === "production") {
 const whitelist = [
   process.env.CLIENT_URL,
   "https://your-nest-egg.onrender.com",
-  "http://localhost:5173"
 ].filter(Boolean);
 
 app.use(cors({
@@ -32,6 +31,7 @@ app.use(cors({
   },
   credentials: true,
 }));
+
 
 
 app.use(express.json());
