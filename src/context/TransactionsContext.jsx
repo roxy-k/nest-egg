@@ -1,5 +1,5 @@
 import React, { createContext, useContext, useEffect, useState } from "react";
-import { useAuth } from "../context/AuthContext.jsx";
+import { useAuth, getToken } from "../context/AuthContext.jsx";
 import { useCategories } from "../context/CategoriesContext.jsx";
 
 const TransactionsContext = createContext(null);
@@ -12,10 +12,12 @@ export function TransactionsProvider({ children }) {
 
   async function api(path, options = {}) {
     const { headers, ...rest } = options;
+    const token = getToken();
     const res = await fetch(`${BASE}${path}`, {
       credentials: "include",
       headers: {
         "Content-Type": "application/json",
+        ...(token ? { Authorization: `Bearer ${token}` } : {}),
         ...(headers || {}),
       },
       ...rest,

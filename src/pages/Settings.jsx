@@ -1,7 +1,7 @@
 import React from "react";
 import { Card, Form,Button } from "react-bootstrap";
 import { useSettings } from "../context/SettingsContext.jsx";
-import { useAuth } from "../context/AuthContext.jsx";
+import { useAuth, getToken } from "../context/AuthContext.jsx";
 import { useTransactions } from "../context/TransactionsContext.jsx";
 import { useCategories } from "../context/CategoriesContext.jsx";
 import { useBudgets } from "../context/BudgetsContext.jsx";
@@ -92,9 +92,11 @@ const { refresh } = useAuth();
     if (!window.confirm(msg)) return;
 
     try {
+      const token = getToken();
       const res = await fetch(`${BASE}/reset`, {
         method: "DELETE",
         credentials: "include",
+        headers: token ? { Authorization: `Bearer ${token}` } : {},
       });
       const data = await res.json();
       if (res.status === 401) {

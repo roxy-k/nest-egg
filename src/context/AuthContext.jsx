@@ -3,7 +3,7 @@ import React, { createContext, useCallback, useContext, useEffect, useRef, useSt
 const AuthContext = createContext();
 const BASE = import.meta.env.VITE_API_URL || "http://localhost:4000/api";
 
-const getToken = () => {
+export const getToken = () => {
   try { return localStorage.getItem("jwt") || ""; } catch { return ""; }
 };
 const setToken = (t) => { try { if (t) localStorage.setItem("jwt", t); } catch {} };

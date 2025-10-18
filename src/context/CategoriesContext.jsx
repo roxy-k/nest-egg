@@ -1,5 +1,5 @@
 import React, { createContext, useContext, useEffect, useState, useCallback } from "react";
-import { useAuth } from "../context/AuthContext.jsx";
+import { useAuth, getToken } from "../context/AuthContext.jsx";
 
 const CategoriesContext = createContext(null);
 const BASE = import.meta.env.VITE_API_URL || "http://localhost:4000/api";
@@ -11,10 +11,12 @@ export function CategoriesProvider({ children }) {
 
   const api = useCallback(async (path, options = {}, attempt = 0) => {
     const { headers, ...rest } = options;
+    const token = getToken();
     const res = await fetch(`${BASE}${path}`, {
       credentials: "include",
       headers: {
         "Content-Type": "application/json",
+        ...(token ? { Authorization: `Bearer ${token}` } : {}),
         ...(headers || {}),
       },
       ...rest,

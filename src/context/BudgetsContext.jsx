@@ -1,5 +1,5 @@
 import React, { createContext, useContext, useEffect, useState } from "react";
-import { useAuth } from "../context/AuthContext.jsx";
+import { useAuth, getToken } from "../context/AuthContext.jsx";
 
 const BudgetsContext = createContext(null);
 const BASE = import.meta.env.VITE_API_URL || "http://localhost:4000/api";
@@ -11,10 +11,12 @@ export function BudgetsProvider({ children }) {
 
   async function api(path, options = {}) {
     const { headers, ...rest } = options;
+    const token = getToken();
     const res = await fetch(`${BASE}${path}`, {
       credentials: "include",
       headers: {
         "Content-Type": "application/json",
+        ...(token ? { Authorization: `Bearer ${token}` } : {}),
         ...(headers || {}),
       },
       ...rest,
@@ -67,10 +69,14 @@ export function BudgetsProvider({ children }) {
   };
 
   const mutateBudget = async (path, method, payload) => {
+    const token = getToken();
     const res = await fetch(`${BASE}${path}`, {
       method,
       credentials: "include",
-      headers: { "Content-Type": "application/json" },
+      headers: {
+        "Content-Type": "application/json",
+        ...(token ? { Authorization: `Bearer ${token}` } : {}),
+      },
       body: JSON.stringify(payload),
     });
 
