@@ -155,14 +155,21 @@ const { t, formatCurrency } = useSettings()
  {last6.every((d) => d.value === 0) ? (
                 <div className="text-muted">{t("dashboard.no_data")}</div>
               ) : (
-                <div style={{ width: "100%", height: 260 }}>
-                  <ResponsiveContainer>
+                <div style={{ width: "100%", height: 260, minHeight: 0 }}>
+                  <ResponsiveContainer debounce ={50}>
                     <AreaChart data={last6} margin={{ left: 8, right: 8, top: 10, bottom: 0 }}>
                       <XAxis dataKey="month" />
                       <YAxis />
                       <Tooltip />
-         <Area type="monotone" dataKey="value" name={t("dashboard.chart_expenses")} fill="#82ca9d" stroke="#82ca9d" fillOpacity={0.15}/>
-                    </AreaChart>
+<Area
+   type="monotone"
+   dataKey="value"
+   name={t("dashboard.chart_expenses")}
+   fill="#82ca9d"
+   stroke="#82ca9d"
+   fillOpacity={0.15}
+   isAnimationActive={false}
+/>                    </AreaChart>
                   </ResponsiveContainer>
                 </div>
               )}
