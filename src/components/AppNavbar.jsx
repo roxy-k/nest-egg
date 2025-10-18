@@ -3,6 +3,7 @@ import { Navbar, Nav, Container, Button } from "react-bootstrap";
 import { NavLink, useNavigate } from "react-router-dom";
 import { useAuth } from "../context/AuthContext.jsx";
 import { useSettings } from "../context/SettingsContext.jsx";
+import logo from "../logo.png";
 
 export default function AppNavbar() {
   const { user, logout } = useAuth();
@@ -25,9 +26,16 @@ export default function AppNavbar() {
       className="mb-4 shadow-sm border-bottom"
     >
       <Container>
-        <Navbar.Brand as={NavLink} to="/">
-          NestEgg
-        </Navbar.Brand>
+       <Navbar.Brand href="/" className="d-flex align-items-center">
+   <img
+     src={logo}
+     alt="Nest Egg logo"
+     height="28"
+     className="me-2"
+     style={{ borderRadius: "6px" }}
+   />
+   <span className="fw-semibold">Nest Egg</span>
+ </Navbar.Brand>
         <Navbar.Toggle aria-controls="main-nav" />
         <Navbar.Collapse id="main-nav">
           <Nav className="me-auto">
