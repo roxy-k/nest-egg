@@ -10,6 +10,7 @@ import budgetsRoutes from "./routes/budgets.js";
 import seedRoutes, { ensureDefaultCategories } from "./routes/seed.js";
 import resetRoutes from "./routes/reset.js";
 import { connectDB } from "./db.js";
+import passport from "./passport.js";
 
 const app = express();
 
@@ -35,6 +36,7 @@ app.use(cors({
 
 app.use(express.json());
 app.use(cookieParser());
+app.use(passport.initialize());
 
 
 app.get("/health", (_req, res) => res.json({ ok: true }));
