@@ -10,9 +10,9 @@ import budgetsRoutes from "./routes/budgets.js";
 import seedRoutes, { ensureDefaultCategories } from "./routes/seed.js";
 import resetRoutes from "./routes/reset.js";
 import { connectDB } from "./db.js";
-// import passport from "./passport.js"; // закомментируй, если файла нет
 
 const app = express();
+
 
 if (process.env.NODE_ENV === "production") {
   app.set("trust proxy", 1);

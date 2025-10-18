@@ -5,7 +5,9 @@ A running log of the NestEgg capstone project: weekly updates, challenges, solut
 > **Scope:** Full‑stack budget tracker (React + Vite, Node/Express, MongoDB), i18n (EN/FR), theming, auth (email + Google OAuth), reports, budgets, and Excel export.  
 > **Owner:** Oksana  Katysheva
 > **Repo:** https://github.com/your-user/nestegg  
-> **Live:** Frontend — https://your-frontend.example.com • API — https://your-backend.example.com/api
+> **Live:** Frontend — https://your-nest-egg
+onrender.com
+• API — https://nest-egg-tuwf.onrender.com
 
 ---
 
