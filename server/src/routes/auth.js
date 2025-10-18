@@ -164,20 +164,33 @@ router.get(
 );
 
 
-router.get(
-  "/google/callback",
-  passport.authenticate("google", {
-    session: false,
-    failureRedirect: `${CLIENT}/login`,
-  }),
-  async (req, res) => {
-    const user = req.user; 
-    const token = jwt.sign({ id: user.id, email: user.email, name: user.name || "" }, process.env.JWT_SECRET, { expiresIn: "7d" });
+router.get("/google/callback", (req, res, next) => {
+  passport.authenticate("google", { session: false }, async (err, user, info) => {
+    try {
+      if (err) {
+        console.error("Google auth error:", err);
+        return res.redirect(`${CLIENT}/login?oauth=server_error`);
+      }
+      if (!user) {
+        console.warn("Google auth no user. Info:", info);
+        return res.redirect(`${CLIENT}/login?oauth=no_user`);
+      }
 
-    res.cookie("token", token, cookieOptions);
-    return res.redirect(`${CLIENT}/dashboard`);
-  }
-);
+      const token = jwt.sign(
+        { id: user.id, email: user.email, name: user.name || "" },
+        JWT_SECRET,
+        { expiresIn: "7d" }
+      );
+
+      res.cookie("token", token, cookieOptions);
+      return res.redirect(`${CLIENT}/dashboard`);
+    } catch (e) {
+      console.error("Google callback handler failed:", e);
+      return res.redirect(`${CLIENT}/login?oauth=callback_failed`);
+    }
+  })(req, res, next);
+});
+
 
 
 router.get("/me", (req, res) => {
