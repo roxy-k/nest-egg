@@ -29,15 +29,20 @@ app.use(
 app.use(express.json());
 app.use(cookieParser());
 
-// app.use(passport.initialize()); // если используешь passport, раскомментируй
 
 app.get("/health", (_req, res) => res.json({ ok: true }));
 app.get("/api/health", (_req, res) => res.json({ ok: true }));
 
-// безопасный вызов БД и дефолтных категорий
 if (connectDB) {
-  connectDB().catch((err) => console.error("DB connect error:", err));
+  const uri = process.env.MONGO_URI;
+  const isProd = process.env.NODE_ENV === "production";
+  if (isProd && !uri) {
+    console.error("🚨 MONGO_URI is required in production. Aborting start.");
+    process.exit(1);
+  }
+  connectDB(uri).catch((err) => console.error("DB connect error:", err));
 }
+
 if (ensureDefaultCategories) {
   ensureDefaultCategories().catch?.((err) =>
     console.error("ensureDefaultCategories error:", err)
