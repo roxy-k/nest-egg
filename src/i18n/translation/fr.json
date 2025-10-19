@@ -107,7 +107,12 @@
     "reset_all": "Tout réinitialiser",
     "reset_confirm": "Voulez-vous vraiment tout réinitialiser ?",
     "reset_success": "Toutes les données ont été réinitialisées.",
-    "reset_failed": "Échec de la réinitialisation des données. Veuillez réessayer."
+    "reset_failed": "Échec de la réinitialisation des données. Veuillez réessayer.",
+    "reset_email_title": "Réinitialiser par e-mail",
+    "reset_email_hint": "Nous enverrons un lien unique à {email}.",
+    "reset_email_button": "Envoyer l'e-mail de réinitialisation",
+    "reset_email_missing": "Aucune adresse e-mail n'est enregistrée pour ce compte.",
+    "reset_email_error": "Impossible d'envoyer l'e-mail de réinitialisation. Veuillez réessayer."
 
   },
   "reports": {
@@ -140,6 +145,7 @@
     "reset_password_submit": "Mettre à jour le mot de passe",
     "reset_password_mismatch": "Les mots de passe ne correspondent pas.",
     "reset_invalid_link": "Ce lien de réinitialisation est invalide ou expiré.",
-    "reset_success": "Mot de passe mis à jour. Redirection…"
+    "reset_success": "Mot de passe mis à jour. Redirection…",
+    "reset_email_disabled": "L'envoi d'e-mails de réinitialisation n'est pas configuré. Contactez le support."
   }
 }

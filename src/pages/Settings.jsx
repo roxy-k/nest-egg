@@ -11,7 +11,7 @@ export default function Settings() {
   const { clearAll: clearTx } = useTransactions();
   const { clearAll: clearCats, reload: reloadCats } = useCategories();
   const { clearAll: clearBudgets } = useBudgets();
-  const { refresh, changePassword } = useAuth();
+  const { refresh, changePassword, requestPasswordReset, user } = useAuth();
 
   const [passwordForm, setPasswordForm] = useState({
     currentPassword: "",
@@ -21,6 +21,8 @@ export default function Settings() {
   const [passwordError, setPasswordError] = useState("");
   const [passwordSuccess, setPasswordSuccess] = useState(false);
   const [changingPassword, setChangingPassword] = useState(false);
+  const [sendingResetEmail, setSendingResetEmail] = useState(false);
+  const [resetEmailState, setResetEmailState] = useState({ success: false, error: "" });
 
   const BASE = import.meta.env.VITE_API_URL || "http://localhost:4000/api";
 
@@ -28,6 +30,7 @@ export default function Settings() {
     event.preventDefault();
     setPasswordError("");
     setPasswordSuccess(false);
+    setResetEmailState({ success: false, error: "" });
 
     const { currentPassword, newPassword, confirmPassword } = passwordForm;
 
@@ -54,6 +57,31 @@ export default function Settings() {
       setPasswordError(err.message || t("settings.password_error"));
     } finally {
       setChangingPassword(false);
+    }
+  };
+
+  const handleSendResetEmail = async () => {
+    setResetEmailState({ success: false, error: "" });
+    if (!user?.email) {
+      setResetEmailState({ success: false, error: t("settings.reset_email_missing") });
+      return;
+    }
+
+    try {
+      setSendingResetEmail(true);
+      const result = await requestPasswordReset({ email: user.email });
+      if (result?.emailSupported === false) {
+        setResetEmailState({ success: false, error: t("auth.reset_email_disabled") });
+        return;
+      }
+      setResetEmailState({ success: true, error: "" });
+    } catch (err) {
+      setResetEmailState({
+        success: false,
+        error: err.message || t("settings.reset_email_error"),
+      });
+    } finally {
+      setSendingResetEmail(false);
     }
   };
 
@@ -159,6 +187,27 @@ export default function Settings() {
 
             <Button type="submit" variant="primary" disabled={changingPassword}>
               {changingPassword ? t("common.loading") : t("settings.change_password")}
+            </Button>
+
+            <hr className="my-4" />
+
+            <h6 className="mb-2">{t("settings.reset_email_title")}</h6>
+            <p className="text-muted">
+              {t("settings.reset_email_hint", { email: user?.email || "—" })}
+            </p>
+            {resetEmailState.success ? (
+              <div className="text-success mb-2">{t("auth.reset_email_sent")}</div>
+            ) : null}
+            {resetEmailState.error ? (
+              <div className="text-danger mb-2">{resetEmailState.error}</div>
+            ) : null}
+            <Button
+              type="button"
+              variant="outline-secondary"
+              onClick={handleSendResetEmail}
+              disabled={sendingResetEmail}
+            >
+              {sendingResetEmail ? t("common.loading") : t("settings.reset_email_button")}
             </Button>
           </Form>
         </Card.Body>

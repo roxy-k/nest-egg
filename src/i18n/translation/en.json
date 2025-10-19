@@ -138,7 +138,12 @@
     "reset_all": "Reset all data",
     "reset_confirm": "Are you sure you want to reset everything?",
     "reset_success": "All data has been reset.",
-    "reset_failed": "Failed to reset data. Please try again."
+    "reset_failed": "Failed to reset data. Please try again.",
+    "reset_email_title": "Reset password via email",
+    "reset_email_hint": "We'll email a one-time link to {email}.",
+    "reset_email_button": "Send reset email",
+    "reset_email_missing": "We don't have an email address for this account.",
+    "reset_email_error": "Unable to send reset email. Please try again."
   },
   "notfound": {
     "title": "Page not found",
@@ -176,6 +181,7 @@
     "reset_password_submit": "Update password",
     "reset_password_mismatch": "Passwords do not match.",
     "reset_invalid_link": "This reset link is invalid or has expired.",
-    "reset_success": "Password updated. Redirecting…"
+    "reset_success": "Password updated. Redirecting…",
+    "reset_email_disabled": "Password emails are not configured. Please contact support."
   }
 }

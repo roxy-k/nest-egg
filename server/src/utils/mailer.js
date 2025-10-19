@@ -74,6 +74,16 @@ const buildTransport = () => {
   return cachedTransport;
 };
 
+export const isResetEmailConfigured = () => {
+  if (process.env.NODE_ENV === "test" || truthy(process.env.RESET_EMAIL_DISABLED)) {
+    return false;
+  }
+  if (cachedState === "pending") {
+    buildTransport();
+  }
+  return cachedState === "ready";
+};
+
 const buildResetLink = ({ baseUrl, email, token }) => {
   const url = new URL(baseUrl || "http://localhost:5173/reset");
   url.searchParams.set("token", token);

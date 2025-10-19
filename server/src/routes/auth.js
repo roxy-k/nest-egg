@@ -6,7 +6,7 @@ import { z } from "zod";
 import passport from "../passport.js";
 import User from "../models/User.js";
 import { requireAuth } from "../middleware/auth.js";
-import { sendPasswordResetEmail } from "../utils/mailer.js";
+import { sendPasswordResetEmail, isResetEmailConfigured } from "../utils/mailer.js";
 
 const router = express.Router();
 
@@ -239,6 +239,7 @@ router.post("/request-reset", async (req, res) => {
   const { email } = parsed.data;
 
   try {
+    const emailSupported = isResetEmailConfigured();
     const user = await User.findOne({ email });
     let rawToken = "";
 
@@ -248,21 +249,28 @@ router.post("/request-reset", async (req, res) => {
       user.passwordResetExpiresAt = new Date(Date.now() + RESET_TOKEN_TTL_MIN * 60 * 1000);
       await user.save();
 
-      const sendPromise = sendPasswordResetEmail({
-        to: user.email,
-        email: user.email,
-        name: user.name || "",
-        token: rawToken,
-        baseUrl: RESET_LINK_BASE,
-      });
-      if (sendPromise?.catch) {
-        sendPromise.catch((err) =>
-          console.error("Password reset email send error:", err?.message || err),
-        );
+      if (emailSupported) {
+        try {
+          const result = await sendPasswordResetEmail({
+            to: user.email,
+            email: user.email,
+            name: user.name || "",
+            token: rawToken,
+            baseUrl: RESET_LINK_BASE,
+          });
+          if (!result?.ok) {
+            console.warn(
+              "Password reset email not sent:",
+              result?.reason || "unknown_reason",
+            );
+          }
+        } catch (err) {
+          console.error("Password reset email send error:", err?.message || err);
+        }
       }
     }
 
-    const payload = { ok: true };
+    const payload = { ok: true, emailSupported: Boolean(emailSupported) };
     if (process.env.NODE_ENV === "test" && rawToken) {
       payload.token = rawToken;
     }

@@ -24,7 +24,11 @@ export default function ForgotPassword() {
 
     try {
       setLoading(true);
-      await requestPasswordReset({ email });
+      const result = await requestPasswordReset({ email });
+      if (result?.emailSupported === false) {
+        setError(t("auth.reset_email_disabled"));
+        return;
+      }
       setSuccess(true);
     } catch (err) {
       setError(err.message || t("errors.unknown"));
