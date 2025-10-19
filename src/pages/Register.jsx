@@ -76,7 +76,7 @@ export default function Register() {
             {loading ? t("auth.creating") : t("auth.signup")}
          </Button>
           <div className="text-center mt-3">
-   <span>{t?.("auth.no_account") ?? "Don't have an account?"} </span>
+  <span>{t?.("auth.no_account") ?? "Don't have an account?"} </span>
    <Link to="/register" className="text-primary text-decoration-none">
      {t?.("auth.sign_up") ?? "Sign up"}
    </Link>
