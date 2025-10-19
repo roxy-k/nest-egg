@@ -1,9 +1,9 @@
 import React, { useState, useEffect } from "react";
-import { Form, Button, Card } from "react-bootstrap";
-import { useNavigate } from "react-router-dom";
+import { Form, Button, Card, InputGroup } from "react-bootstrap";
+import { useNavigate, Link } from "react-router-dom";
 import { useAuth } from "../context/AuthContext.jsx";
-import { useSettings } from "../context/SettingsContext.jsx"
-import { Link } from "react-router-dom";
+import { useSettings } from "../context/SettingsContext.jsx";
+import { FaEye, FaEyeSlash } from "react-icons/fa";
 
 const BASE = import.meta.env.VITE_API_URL || "http://localhost:4000/api";
 const googleSignIn = () => { window.location.href = `${BASE}/auth/google`; };
@@ -14,6 +14,7 @@ export default function Login() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [loading, setLoading] = useState(false);
+  const [showPassword, setShowPassword] = useState(false);
   const { t } = useSettings();
 
 useEffect(() => {
@@ -71,27 +72,38 @@ useEffect(() => {
           </Form.Group>
           <Form.Group className="mb-3">
             <Form.Label>Password</Form.Label>
-            <Form.Control
-              type="password"
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-              required
-            />
+            <InputGroup>
+              <Form.Control
+                type={showPassword ? "text" : "password"}
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                required
+              />
+              <Button
+                variant="outline-secondary"
+                type="button"
+                onClick={() => setShowPassword((prev) => !prev)}
+                aria-label={
+                  showPassword
+                    ? t?.("auth.hide_password") ?? "Hide password"
+                    : t?.("auth.show_password") ?? "Show password"
+                }
+              >
+                {showPassword ? <FaEyeSlash aria-hidden="true" /> : <FaEye aria-hidden="true" />}
+              </Button>
+            </InputGroup>
           </Form.Group>
           <Button type="submit" className="w-100" disabled={loading}>
             {loading ? t("auth.signing_in") : t("auth.login")}
           </Button>
-          <div className="text-center mt-4">
-            <span className="text-muted d-block mb-2">
-              {t?.("auth.no_account") ?? "Don't have an account?"}
-            </span>
+          <div className="mt-4">
             <Button
               as={Link}
               to="/register"
               variant="outline-primary"
               className="w-100"
             >
-              {t?.("auth.sign_up") ?? "Sign up"}
+              Sign Up
             </Button>
           </div>
         </Form>
