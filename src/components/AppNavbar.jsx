@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useRef } from "react";
 import { Navbar, Nav, Container, Button } from "react-bootstrap";
 import { NavLink, useNavigate } from "react-router-dom";
 import { useAuth } from "../context/AuthContext.jsx";
@@ -9,11 +9,18 @@ export default function AppNavbar() {
   const { user, logout } = useAuth();
   const navigate = useNavigate();
   const { settings, t } = useSettings();
+  const reportsPrefetched = useRef(false);
   
 
   const handleLogout = async () => {
     await logout();
     navigate("/login");
+  };
+
+  const handleReportsHover = () => {
+    if (reportsPrefetched.current) return;
+    reportsPrefetched.current = true;
+    import("../pages/Reports.jsx");
   };
 
   const isDark = settings?.theme === "dark";
@@ -26,23 +33,26 @@ export default function AppNavbar() {
       className="mb-4 shadow-sm border-bottom"
     >
       <Container>
-       <Navbar.Brand href="/" className="d-flex align-items-center">
-   <img
-     src={logo}
-     alt="Nest Egg logo"
-     height="28"
-     className="me-2"
-     style={{ borderRadius: "6px" }}
-   />
-   <span className="fw-semibold">Nest Egg</span>
- </Navbar.Brand>
+        <Navbar.Brand href="/" className="d-flex align-items-center">
+          <img
+            src={logo}
+            alt="Nest Egg logo"
+            height="28"
+            loading="lazy"
+            className="me-2"
+            style={{ borderRadius: "6px" }}
+          />
+          <span className="fw-semibold">Nest Egg</span>
+        </Navbar.Brand>
         <Navbar.Toggle aria-controls="main-nav" />
         <Navbar.Collapse id="main-nav">
           <Nav className="me-auto">
             <Nav.Link as={NavLink} to="/transactions">{t ? t("nav.transactions") : "Transactions"}</Nav.Link>
             <Nav.Link as={NavLink} to="/categories">{t ? t("nav.categories") : "Categories"}</Nav.Link>
             <Nav.Link as={NavLink} to="/budgets">{t ? t("nav.budgets") : "Budgets"}</Nav.Link>
-            <Nav.Link as={NavLink} to="/reports">{t ? t("nav.reports") : "Reports"}</Nav.Link>
+            <Nav.Link as={NavLink} to="/reports" onMouseEnter={handleReportsHover}>
+              {t ? t("nav.reports") : "Reports"}
+            </Nav.Link>
             <Nav.Link as={NavLink} to="/settings">{t ? t("nav.settings") : "Settings"}</Nav.Link>
           </Nav>
           <Nav>
