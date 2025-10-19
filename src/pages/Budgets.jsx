@@ -1,13 +1,15 @@
 import React, { useMemo, useState, useEffect } from "react";
-import { Table, Button, Modal, Form, ProgressBar, Badge } from "react-bootstrap";
+import { Table, Button, Modal, Form, ProgressBar, Badge, InputGroup } from "react-bootstrap";
 import { useCategories } from "../context/CategoriesContext.jsx";
 import { useTransactions } from "../context/TransactionsContext.jsx";
 import { useBudgets } from "../context/BudgetsContext.jsx";
 import { useSettings } from "../context/SettingsContext.jsx";
+import { useNavigate } from "react-router-dom";
 
 const monthKey = (isoDate) => isoDate?.slice(0, 7); 
 
 export default function Budgets() {
+  const navigate = useNavigate();
   const { categories } = useCategories();
   const { transactions } = useTransactions();
   const { budgets, addBudget, updateBudget, removeBudget } = useBudgets();
@@ -73,6 +75,11 @@ export default function Budgets() {
     setForm({ categoryId: "", month: "", limit: "" });
     setYy(year);
     setMm(month);
+  };
+
+  const openCategoriesPage = () => {
+    close();
+    navigate("/categories");
   };
 
   const onChange = (e) => setForm((p) => ({ ...p, [e.target.name]: e.target.value }));
@@ -242,18 +249,22 @@ alert(t("errors.limit_min"))
           <Form>
             <Form.Group className="mb-3">
               <Form.Label>{t("budgets.category")}</Form.Label>
-              <Form.Select name="categoryId" value={form.categoryId} onChange={onChange}>
- <option value="">{t("budgets.select_category")}</option>
-  {categories.map((c) => (
-    <option
-      key={String(c.id || c._id)}
-      value={String(c.id || c._id)}
-    >
-      {c.name}
-    </option>
-  ))}
-</Form.Select>
-
+              <InputGroup>
+                <Form.Select name="categoryId" value={form.categoryId} onChange={onChange}>
+                  <option value="">{t("budgets.select_category")}</option>
+                  {categories.map((c) => (
+                    <option
+                      key={String(c.id || c._id)}
+                      value={String(c.id || c._id)}
+                    >
+                      {c.name}
+                    </option>
+                  ))}
+                </Form.Select>
+                <Button variant="outline-primary" onClick={openCategoriesPage}>
+                  {t("categories.add_title")}
+                </Button>
+              </InputGroup>
             </Form.Group>
 
             <Form.Group className="mb-3">

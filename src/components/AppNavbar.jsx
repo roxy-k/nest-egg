@@ -61,7 +61,12 @@ export default function AppNavbar() {
                 <Navbar.Text className="me-3">
                  {t ? t("nav.hello") : "Hello"}, <strong>{user?.name}</strong>
                 </Navbar.Text>
-                <Button variant={isDark ? "outline-light" : "outline-danger"} onClick={handleLogout}>
+                <Button
+                  variant={isDark ? "outline-light" : "outline-danger"}
+                  size="sm"
+                  className="mt-3 mt-sm-0 align-self-start"
+                  onClick={handleLogout}
+                >
                   {t ? t("nav.logout") : "Log out"}
                 </Button>
               </>
