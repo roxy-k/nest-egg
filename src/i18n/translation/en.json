@@ -162,6 +162,20 @@
     "google": "Continue with Google",
     "or": "or",
     "signing_in": "Signing you in…",
-    "creating": "Creating…"
+    "creating": "Creating…",
+    "forgot_password_link": "Forgot password?",
+    "reset_password_title": "Forgot your password?",
+    "reset_password_hint": "Enter your email and we'll send you a reset link.",
+    "reset_email_sent": "If that email is registered, you'll receive a reset link shortly.",
+    "email_label": "Email",
+    "request_link": "Send reset link",
+    "back_to_login": "Back to login",
+    "set_new_password": "Set a new password",
+    "new_password_label": "New password",
+    "confirm_password_label": "Confirm new password",
+    "reset_password_submit": "Update password",
+    "reset_password_mismatch": "Passwords do not match.",
+    "reset_invalid_link": "This reset link is invalid or has expired.",
+    "reset_success": "Password updated. Redirecting…"
   }
 }

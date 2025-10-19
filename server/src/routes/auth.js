@@ -6,6 +6,7 @@ import { z } from "zod";
 import passport from "../passport.js";
 import User from "../models/User.js";
 import { requireAuth } from "../middleware/auth.js";
+import { sendPasswordResetEmail } from "../utils/mailer.js";
 
 const router = express.Router();
 
@@ -13,6 +14,9 @@ const CLIENT =
   process.env.CLIENT_URL ||
   "https://your-nest-egg.onrender.com";
 
+const RESET_LINK_BASE =
+  process.env.RESET_EMAIL_URL ||
+  `${(CLIENT || "http://localhost:5173").replace(/\/$/, "")}/reset`;
 
 
 const JWT_SECRET = process.env.JWT_SECRET || "dev_secret";
@@ -243,6 +247,19 @@ router.post("/request-reset", async (req, res) => {
       user.passwordResetTokenHash = hashResetToken(rawToken);
       user.passwordResetExpiresAt = new Date(Date.now() + RESET_TOKEN_TTL_MIN * 60 * 1000);
       await user.save();
+
+      const sendPromise = sendPasswordResetEmail({
+        to: user.email,
+        email: user.email,
+        name: user.name || "",
+        token: rawToken,
+        baseUrl: RESET_LINK_BASE,
+      });
+      if (sendPromise?.catch) {
+        sendPromise.catch((err) =>
+          console.error("Password reset email send error:", err?.message || err),
+        );
+      }
     }
 
     const payload = { ok: true };

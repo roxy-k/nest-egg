@@ -132,6 +132,42 @@ export function AuthProvider({ children }) {
     return data;
   };
 
+  const requestPasswordReset = async ({ email }) => {
+    const res = await fetch(`${BASE}/auth/request-reset`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      credentials: "include",
+      body: JSON.stringify({ email }),
+    });
+    const data = await res.json().catch(() => ({}));
+    if (!res.ok || !data.ok) {
+      throw new Error(data.error || "Unable to send reset email");
+    }
+    return data;
+  };
+
+  const resetPassword = async ({ email, token, newPassword }) => {
+    const res = await fetch(`${BASE}/auth/reset-password`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      credentials: "include",
+      body: JSON.stringify({ email, token, newPassword }),
+    });
+    const data = await res.json().catch(() => ({}));
+    if (!res.ok || !data.ok) {
+      throw new Error(data.error || "Unable to reset password");
+    }
+    if (data.token) {
+      setToken(data.token);
+    }
+    const u = normalizeUser(data);
+    if (u) {
+      setUser(u);
+      userRef.current = u;
+    }
+    return data;
+  };
+
   const logout = async () => {
     try {
       await fetch(`${BASE}/auth/logout`, {
@@ -145,6 +181,16 @@ export function AuthProvider({ children }) {
     }
   };
 
-  const value = { user, loading, login, register, logout, refresh, changePassword };
+  const value = {
+    user,
+    loading,
+    login,
+    register,
+    logout,
+    refresh,
+    changePassword,
+    requestPasswordReset,
+    resetPassword,
+  };
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
 }

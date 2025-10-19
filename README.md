@@ -171,7 +171,10 @@ Body: { "email": "user@example.com", "token": "string", "newPassword": "secret12
 - Tokens expire after `RESET_TOKEN_EXPIRES_MIN` minutes.
 - After reset, token fields are cleared.
 - Rate limiting and identical responses prevent email enumeration.
-- Uses `nodemailer` or `SendGrid` for SMTP delivery.
+- Set the following environment variables to enable reset emails:
+  - `SMTP_URL` **or** (`SMTP_HOST`, `SMTP_PORT`, `SMTP_USER`, `SMTP_PASS`)
+  - Optional: `RESET_EMAIL_FROM`, `RESET_EMAIL_SUBJECT`, `RESET_EMAIL_URL`
+- Uses `nodemailer` for SMTP delivery.
 
 ---
 

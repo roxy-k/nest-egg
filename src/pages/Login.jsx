@@ -94,6 +94,9 @@ useEffect(() => {
               </button>
             </div>
           </Form.Group>
+          <div className="text-end mb-3">
+            <Link to="/forgot">{t("auth.forgot_password_link")}</Link>
+          </div>
           <Button type="submit" className="w-100" disabled={loading}>
             {loading ? t("auth.signing_in") : t("auth.login")}
           </Button>

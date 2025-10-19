@@ -14,6 +14,8 @@ const Settings = lazy(() => import("./pages/Settings.jsx"));
 const Login = lazy(() => import("./pages/Login.jsx"));
 const Register = lazy(() => import("./pages/Register.jsx"));
 const OAuth = lazy(() => import("./pages/OAuth.jsx"));
+const ForgotPassword = lazy(() => import("./pages/ForgotPassword.jsx"));
+const ResetPassword = lazy(() => import("./pages/ResetPassword.jsx"));
 const NotFound = lazy(() => import("./pages/NotFound.jsx"));
 
 function PrivateRoute({ children }) {
@@ -95,6 +97,8 @@ export default function App() {
             path="/register"
             element={loading ? <div className="text-center p-5">Loading…</div> : user ? <Navigate to="/dashboard" /> : <Register />}
           />
+          <Route path="/forgot" element={<ForgotPassword />} />
+          <Route path="/reset" element={<ResetPassword />} />
 
           <Route path="*" element={<NotFound />} />
         </Routes>
