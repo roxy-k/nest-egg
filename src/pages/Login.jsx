@@ -82,6 +82,7 @@ useEffect(() => {
               <Button
                 variant="outline-secondary"
                 type="button"
+                className="border-0 bg-transparent"
                 onClick={() => setShowPassword((prev) => !prev)}
                 aria-label={
                   showPassword

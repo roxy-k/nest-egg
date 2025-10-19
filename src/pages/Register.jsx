@@ -1,8 +1,9 @@
 import React, { useState } from "react";
-import { Form, Button, Card, Alert } from "react-bootstrap";
+import { Form, Button, Card, Alert, InputGroup } from "react-bootstrap";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "../context/AuthContext.jsx";
 import { useSettings } from "../context/SettingsContext.jsx";
+import { FaEye, FaEyeSlash } from "react-icons/fa";
 
 const BASE = import.meta.env.VITE_API_URL || "http://localhost:4000/api";
 
@@ -18,6 +19,7 @@ export default function Register() {
   const [name, setName] = useState("");          
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
+  const [showPassword, setShowPassword] = useState(false);
   const { t } = useSettings();
 
   const onSubmit = async (e) => {
@@ -58,14 +60,34 @@ export default function Register() {
 </Button>
 
         <div className="text-center text-muted mb-3">{t("auth.or")}</div>
-<div className="text-center text-muted mb-3"></div><Form onSubmit={onSubmit}>
+        <Form onSubmit={onSubmit}>
           <Form.Group className="mb-3">
             <Form.Label>Email</Form.Label>
             <Form.Control type="email" value={email} onChange={e=>setEmail(e.target.value)} required />
           </Form.Group>
           <Form.Group className="mb-3">
             <Form.Label>Password</Form.Label>
-            <Form.Control type="password" value={password} onChange={e=>setPassword(e.target.value)} required />
+            <InputGroup>
+              <Form.Control
+                type={showPassword ? "text" : "password"}
+                value={password}
+                onChange={e=>setPassword(e.target.value)}
+                required
+              />
+              <Button
+                variant="outline-secondary"
+                type="button"
+                className="border-0 bg-transparent"
+                onClick={() => setShowPassword(prev => !prev)}
+                aria-label={
+                  showPassword
+                    ? t?.("auth.hide_password") ?? "Hide password"
+                    : t?.("auth.show_password") ?? "Show password"
+                }
+              >
+                {showPassword ? <FaEyeSlash aria-hidden="true" /> : <FaEye aria-hidden="true" />}
+              </Button>
+            </InputGroup>
             <Form.Text muted>Min 6 characters.</Form.Text>
           </Form.Group>
           <Form.Group className="mb-3">

@@ -51,6 +51,12 @@ const openEdit = (t) => {
 };
 
   const close = () => setShow(false);
+  const openCategoriesPage = () => {
+    close();
+    setEditId(null);
+    setForm({ date: "", categoryId: "", type: DEFAULT_TYPE, amount: "" });
+    navigate("/categories");
+  };
 
   const onChange = (e) => {
     const { name, value } = e.target;
@@ -186,26 +192,14 @@ bv = (categories.find((c) => (c._id || c.id) === b.categoryId)?.name || b.catego
           </Form.Select>
         </Col>
         <Col md={3}>
-        <Form.Select
-  value={form.categoryId}
-  onChange={(e) => {
-    if (e.target.value === "add-category") {
-      navigate("/categories"); // редирект на страницу категорий
-    } else {
-      setForm((f) => ({ ...f, categoryId: e.target.value }));
-    }
-  }}
->
-  <option value="">All categories</option>
-  {categories.map((c) => (
-    <option key={c.id} value={c.id}>
-      {c.name}
-    </option>
-  ))}
-+ <option value="add-category">➕ Add new category</option>
-</Form.Select>
-
-
+          <Form.Select value={fCategory} onChange={(e) => setFCategory(e.target.value)}>
+            <option value="">{t("transactions.all_categories")}</option>
+            {categories.map((c) => (
+              <option key={c._id || c.id} value={c._id || c.id}>
+                {c.name}
+              </option>
+            ))}
+          </Form.Select>
         </Col>
         <Col md={3}>
           <Form.Select value={fType} onChange={(e) => setFType(e.target.value)}>
@@ -283,16 +277,21 @@ bv = (categories.find((c) => (c._id || c.id) === b.categoryId)?.name || b.catego
             </Form.Group>
 
             <Form.Group className="mb-3">
-              <Form.Label>{t("common.category")}</Form.Label>             
-               <Form.Select name="categoryId" value={form.categoryId} onChange={onChange}>
-            <option value="">{t("transactions.all_categories")}</option>               
-              {categories.map((c) => (
-   <option key={c.id} value={c.id}>
-     {c.name}
-   </option>
- ))}
-              </Form.Select>
-             <Form.Text className="text-muted">{t("transactions.type")}: {t("transactions.type_income")}/{t("transactions.type_expense")}</Form.Text>
+              <Form.Label>{t("common.category")}</Form.Label>
+              <InputGroup>
+                <Form.Select name="categoryId" value={form.categoryId} onChange={onChange}>
+                  <option value="">{t("transactions.all_categories")}</option>
+                  {categories.map((c) => (
+                    <option key={c._id || c.id} value={c._id || c.id}>
+                      {c.name}
+                    </option>
+                  ))}
+                </Form.Select>
+                <Button variant="outline-primary" onClick={openCategoriesPage}>
+                  {t("categories.add_title")}
+                </Button>
+              </InputGroup>
+              <Form.Text className="text-muted">{t("transactions.type")}: {t("transactions.type_income")}/{t("transactions.type_expense")}</Form.Text>
             </Form.Group>
 
             <Form.Group className="mb-3">
