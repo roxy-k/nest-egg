@@ -59,6 +59,8 @@ export async function ensureDefaultCategories() {
     ownerKey: SHARED_OWNER_KEY,
   }));
 
+  await Category.deleteMany({ ownerKey: SHARED_OWNER_KEY, id: "gifts" });
+
   let created = 0;
   for (const doc of defaults) {
     const { id, ownerKey, name, type, ...rest } = doc;

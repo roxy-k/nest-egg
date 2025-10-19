@@ -77,7 +77,7 @@ export default function Register() {
               />
               <button
                 type="button"
-                className="btn btn-link text-muted position-absolute top-50 end-0 translate-middle-y pe-3 ps-1"
+                className="btn btn-link text-muted position-absolute top-50 end-0 translate-middle-y pe-3 ps-1 d-flex align-items-center"
                 onClick={() => setShowPassword(prev => !prev)}
                 aria-label={
                   showPassword

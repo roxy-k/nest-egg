@@ -4,6 +4,7 @@ import bcrypt from "bcryptjs";
 import { z } from "zod";
 import passport from "../passport.js";
 import User from "../models/User.js";
+import { requireAuth } from "../middleware/auth.js";
 
 const router = express.Router();
 
@@ -52,6 +53,15 @@ const loginSchema = z.object({
     .email("Invalid email"),
   password: z
     .string({ required_error: "Password is required" })
+    .min(6, "Password must be at least 6 characters."),
+});
+
+const changePasswordSchema = z.object({
+  currentPassword: z
+    .string({ required_error: "Current password is required" })
+    .min(6, "Password must be at least 6 characters."),
+  newPassword: z
+    .string({ required_error: "New password is required" })
     .min(6, "Password must be at least 6 characters."),
 });
 
@@ -142,6 +152,51 @@ return res.status(200).json({
   } catch (err) {
     console.error("Login error:", err);
     return res.status(500).json({ error: "Server error" });
+  }
+});
+
+
+router.post("/change-password", requireAuth, async (req, res) => {
+  const parsed = changePasswordSchema.safeParse(req.body);
+  if (!parsed.success) {
+    const msg = parsed.error.errors?.[0]?.message || "Invalid data";
+    return res.status(400).json({ error: msg });
+  }
+
+  const { currentPassword, newPassword } = parsed.data;
+
+  if (currentPassword === newPassword) {
+    return res.status(400).json({ error: "New password must be different from the current password." });
+  }
+
+  try {
+    const user = await User.findById(req.user?.id).select("+passwordHash");
+    if (!user) {
+      return res.status(404).json({ error: "User not found." });
+    }
+
+    if (user.provider && user.provider !== "local") {
+      return res.status(400).json({ error: "Password change is not available for this account." });
+    }
+
+    if (!user.passwordHash) {
+      return res.status(400).json({ error: "Password change is not available for this account." });
+    }
+
+    const matches = await bcrypt.compare(currentPassword, user.passwordHash || "");
+    if (!matches) {
+      return res.status(400).json({ error: "Current password is incorrect." });
+    }
+
+    user.passwordHash = await bcrypt.hash(newPassword, 12);
+    await user.save();
+
+    const token = signToken(user);
+    res.cookie("token", token, cookieOptions);
+    return res.json({ ok: true, user: buildUserPayload(user), token });
+  } catch (err) {
+    console.error("Change password error:", err);
+    return res.status(500).json({ error: "Unable to change password." });
   }
 });
 

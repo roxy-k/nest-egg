@@ -100,6 +100,38 @@ export function AuthProvider({ children }) {
     return u;
   };
 
+  const changePassword = async ({ currentPassword, newPassword }) => {
+    const token = getToken();
+    const headers = {
+      "Content-Type": "application/json",
+      ...(token ? { Authorization: `Bearer ${token}` } : {}),
+    };
+
+    const res = await fetch(`${BASE}/auth/change-password`, {
+      method: "POST",
+      headers,
+      credentials: "include",
+      body: JSON.stringify({ currentPassword, newPassword }),
+    });
+
+    const data = await res.json().catch(() => ({}));
+    if (!res.ok || !data.ok) {
+      throw new Error(data.error || "Unable to change password");
+    }
+
+    if (data.token) {
+      setToken(data.token);
+    }
+
+    const u = normalizeUser(data);
+    if (u) {
+      setUser(u);
+      userRef.current = u;
+    }
+
+    return data;
+  };
+
   const logout = async () => {
     try {
       await fetch(`${BASE}/auth/logout`, {
@@ -113,6 +145,6 @@ export function AuthProvider({ children }) {
     }
   };
 
-  const value = { user, loading, login, register, logout, refresh };
+  const value = { user, loading, login, register, logout, refresh, changePassword };
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
 }

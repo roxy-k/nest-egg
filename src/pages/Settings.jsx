@@ -1,5 +1,5 @@
-import React from "react";
-import { Card, Form,Button } from "react-bootstrap";
+import React, { useState } from "react";
+import { Card, Form, Button } from "react-bootstrap";
 import { useSettings } from "../context/SettingsContext.jsx";
 import { useAuth, getToken } from "../context/AuthContext.jsx";
 import { useTransactions } from "../context/TransactionsContext.jsx";
@@ -7,24 +7,55 @@ import { useCategories } from "../context/CategoriesContext.jsx";
 import { useBudgets } from "../context/BudgetsContext.jsx";
 
 export default function Settings() {
-  const {
-    settings,
-    setTheme,
-    setLanguage,
-    setCurrency,
-    allCurrencies = [],
-    t
-  } = useSettings();
+  const { settings, setTheme, setLanguage, setCurrency, allCurrencies = [], t } = useSettings();
+  const { clearAll: clearTx } = useTransactions();
+  const { clearAll: clearCats, reload: reloadCats } = useCategories();
+  const { clearAll: clearBudgets } = useBudgets();
+  const { refresh, changePassword } = useAuth();
 
-
-const { clearAll: clearTx } = useTransactions();
-const { clearAll: clearCats, reload: reloadCats } = useCategories();
-const { clearAll: clearBudgets } = useBudgets();
-const { refresh } = useAuth();
-
-
+  const [passwordForm, setPasswordForm] = useState({
+    currentPassword: "",
+    newPassword: "",
+    confirmPassword: "",
+  });
+  const [passwordError, setPasswordError] = useState("");
+  const [passwordSuccess, setPasswordSuccess] = useState(false);
+  const [changingPassword, setChangingPassword] = useState(false);
 
   const BASE = import.meta.env.VITE_API_URL || "http://localhost:4000/api";
+
+  const handlePasswordSubmit = async (event) => {
+    event.preventDefault();
+    setPasswordError("");
+    setPasswordSuccess(false);
+
+    const { currentPassword, newPassword, confirmPassword } = passwordForm;
+
+    if (!currentPassword || !newPassword || !confirmPassword) {
+      setPasswordError(t("settings.password_required"));
+      return;
+    }
+
+    if (newPassword !== confirmPassword) {
+      setPasswordError(t("settings.password_mismatch"));
+      return;
+    }
+
+    try {
+      setChangingPassword(true);
+      await changePassword({ currentPassword, newPassword });
+      setPasswordSuccess(true);
+      setPasswordForm({
+        currentPassword: "",
+        newPassword: "",
+        confirmPassword: "",
+      });
+    } catch (err) {
+      setPasswordError(err.message || t("settings.password_error"));
+    } finally {
+      setChangingPassword(false);
+    }
+  };
 
   return (
     <>
@@ -34,31 +65,28 @@ const { refresh } = useAuth();
         <Card.Body>
           <Card.Title className="mb-3">{t("settings.appearance")}</Card.Title>
 
-          {/* Theme */}
           <Form.Group className="mb-3">
             <Form.Label>{t("settings.theme")}</Form.Label>
             <Form.Select
               value={settings.theme || "light"}
               onChange={(e) => setTheme(e.target.value)}
             >
-               <option value="light">{t("settings.light")}</option>
-             <option value="dark">{t("settings.dark")}</option>
+              <option value="light">{t("settings.light")}</option>
+              <option value="dark">{t("settings.dark")}</option>
             </Form.Select>
           </Form.Group>
 
-         <Form.Group className="mb-3">
- <Form.Label>{t("settings.language")}</Form.Label>
-  <Form.Select
-    value={settings.language || "en"}
-    onChange={(e) => setLanguage(e.target.value)}
-  >
-    <option value="en">English</option>
-    <option value="fr">Français</option>
-  </Form.Select>
-</Form.Group>
+          <Form.Group className="mb-3">
+            <Form.Label>{t("settings.language")}</Form.Label>
+            <Form.Select
+              value={settings.language || "en"}
+              onChange={(e) => setLanguage(e.target.value)}
+            >
+              <option value="en">English</option>
+              <option value="fr">Français</option>
+            </Form.Select>
+          </Form.Group>
 
-
-          {/* Currency — ONE select with ALL currencies */}
           <Form.Group className="mb-3">
             <Form.Label>{t("settings.currency")}</Form.Label>
             <Form.Select
@@ -75,56 +103,110 @@ const { refresh } = useAuth();
         </Card.Body>
       </Card>
 
-      {/* Danger Zone */}
-<Card className="border-danger mt-4 shadow-sm">
-  <Card.Body>
+      <Card className="mb-4">
+        <Card.Body>
+          <Card.Title className="mb-3">{t("settings.password_section")}</Card.Title>
+          <Form onSubmit={handlePasswordSubmit}>
+            <Form.Group className="mb-3" controlId="settings-current-password">
+              <Form.Label>{t("settings.current_password")}</Form.Label>
+              <Form.Control
+                type="password"
+                autoComplete="current-password"
+                value={passwordForm.currentPassword}
+                onChange={(e) =>
+                  setPasswordForm((prev) => ({
+                    ...prev,
+                    currentPassword: e.target.value,
+                  }))
+                }
+              />
+            </Form.Group>
 
-<Card.Title className="text-danger fw-bold">{t("settings.reset_section")}</Card.Title>
-<Card.Text className="text-muted mb-3">{t("settings.reset_hint")}</Card.Text>
+            <Form.Group className="mb-3" controlId="settings-new-password">
+              <Form.Label>{t("settings.new_password")}</Form.Label>
+              <Form.Control
+                type="password"
+                autoComplete="new-password"
+                value={passwordForm.newPassword}
+                onChange={(e) =>
+                  setPasswordForm((prev) => ({
+                    ...prev,
+                    newPassword: e.target.value,
+                  }))
+                }
+              />
+            </Form.Group>
 
+            <Form.Group className="mb-3" controlId="settings-confirm-password">
+              <Form.Label>{t("settings.confirm_password")}</Form.Label>
+              <Form.Control
+                type="password"
+                autoComplete="new-password"
+                value={passwordForm.confirmPassword}
+                onChange={(e) =>
+                  setPasswordForm((prev) => ({
+                    ...prev,
+                    confirmPassword: e.target.value,
+                  }))
+                }
+              />
+            </Form.Group>
 
- 
+            {passwordError ? <div className="text-danger mb-3">{passwordError}</div> : null}
+            {passwordSuccess ? (
+              <div className="text-success mb-3">{t("settings.password_success")}</div>
+            ) : null}
 
-<Button
-  variant="danger"
-  onClick={async () => {
-    const msg = t("settings.reset_confirm");
-    if (!window.confirm(msg)) return;
+            <Button type="submit" variant="primary" disabled={changingPassword}>
+              {changingPassword ? t("common.loading") : t("settings.change_password")}
+            </Button>
+          </Form>
+        </Card.Body>
+      </Card>
 
-    try {
-      const token = getToken();
-      const res = await fetch(`${BASE}/reset`, {
-        method: "DELETE",
-        credentials: "include",
-        headers: token ? { Authorization: `Bearer ${token}` } : {},
-      });
-      const data = await res.json();
-      if (res.status === 401) {
-        await refresh({ silent: true }).catch(() => null);
-      }
-      if (!res.ok || !data.ok) throw new Error(data.error || "reset_failed");
+      <Card className="border-danger mt-4 shadow-sm">
+        <Card.Body>
+          <Card.Title className="text-danger fw-bold">{t("settings.reset_section")}</Card.Title>
+          <Card.Text className="text-muted mb-3">{t("settings.reset_hint")}</Card.Text>
 
-      localStorage.removeItem("transactions");
-      localStorage.removeItem("categories");
-      localStorage.removeItem("budgets");
-      clearTx();
-      clearCats();
-      clearBudgets();
-      await reloadCats().catch(() => {});
+          <Button
+            variant="danger"
+            onClick={async () => {
+              const msg = t("settings.reset_confirm");
+              if (!window.confirm(msg)) return;
 
-      window.alert(t("settings.reset_success"));
-    } catch (e) {
-      console.error(e);
-      window.alert(t("settings.reset_failed"));
-    }
-  }}
->
-{t("settings.reset_all")}</Button>
+              try {
+                const token = getToken();
+                const res = await fetch(`${BASE}/reset`, {
+                  method: "DELETE",
+                  credentials: "include",
+                  headers: token ? { Authorization: `Bearer ${token}` } : {},
+                });
+                const data = await res.json();
+                if (res.status === 401) {
+                  await refresh({ silent: true }).catch(() => null);
+                }
+                if (!res.ok || !data.ok) throw new Error(data.error || "reset_failed");
 
+                localStorage.removeItem("transactions");
+                localStorage.removeItem("categories");
+                localStorage.removeItem("budgets");
+                clearTx();
+                clearCats();
+                clearBudgets();
+                await reloadCats().catch(() => undefined);
 
-  </Card.Body>
-</Card>
-
+                window.alert(t("settings.reset_success"));
+              } catch (e) {
+                console.error(e);
+                window.alert(t("settings.reset_failed"));
+              }
+            }}
+          >
+            {t("settings.reset_all")}
+          </Button>
+        </Card.Body>
+      </Card>
     </>
   );
 }
