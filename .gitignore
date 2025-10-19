@@ -16,7 +16,6 @@ pnpm-debug.log*
 # build & coverage
 coverage/
 .nyc_output/
-docs/
 dist/
 build/
 

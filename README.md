@@ -2,12 +2,12 @@
 
 A modern web app for tracking personal finances: transactions, categories, monthly budgets, reports/charts, Excel export, localization (EN/FR), theming (light/dark), and authentication (email + Google OAuth). Built with **React + Vite** on the frontend and **Node.js + Express + MongoDB** on the backend.
 
-> **Live demo:** _Add your links here_
+> **Live demo:**
 >
-> - Frontend: https://your-frontend.example.com  
-> - API: https://your-backend.example.com/api  
+> - Frontend: https://your-nest-egg.onrender.com
+> - API: https://nest-egg-tuwf.onrender.com/api
 >
-> **Repository:** https://github.com/your-user/nestegg
+> **Repository:** https://github.com/roxy-k/nest-egg
 
 ---
 
@@ -23,13 +23,13 @@ A modern web app for tracking personal finances: transactions, categories, month
   - [Frontend (React + Vite)](#frontend-react--vite)
   - [Backend (Nodejs--express--mongodb)](#backend-nodejs--express--mongodb)
 - [Usage Guide](#usage-guide)
+- [Password Reset](#password-reset)
 - [Testing](#testing)
 - [Deployment](#deployment)
 - [Devlog](#devlog)
 - [Future Improvements](#future-improvements)
 - [Screenshots](#screenshots)
 - [Security & Privacy](#security--privacy)
-- [License](#license)
 
 ---
 
@@ -52,8 +52,9 @@ A modern web app for tracking personal finances: transactions, categories, month
 - 🌐 **Localization (EN/FR)**: Easy to extend using JSON dictionaries.
 - 🎨 **Themes**: Light/dark theme via `data-bs-theme` (Bootstrap 5 compatible).
 - 📤 **Export**: Download transactions as **Excel (.xlsx)**.
-- 🔐 **Auth**: Email/password + Google OAuth with session cookies.
+- 🔐 **Auth**: Email/password + Google OAuth (**session cookies + Bearer JWT fallback for Safari**).
 - ⚙️ **Settings**: Language, theme, currency; a “Reset demo data” action for quick cleanup.
+- 🔑 **Password Reset**: Secure token-based password reset via email link (implemented on backend & frontend).
 
 ---
 
@@ -69,17 +70,15 @@ A modern web app for tracking personal finances: transactions, categories, month
 
 ### Backend
 - **Express** (REST API), **MongoDB/Mongoose** (models: `User`, `Category`, `Transaction`, `Budget`).
-- **Passport** (JWT + Google OAuth), session cookies, CORS.
+- **Passport** (JWT + Google OAuth), CORS.
 - API namespaces: `/auth`, `/categories`, `/transactions`, `/budgets`, `/reset`.
-
-**Design principles:** separation of concerns (contexts/pages/services), normalized inputs (sanitize), and unified identifiers using `(doc._id || doc.id)` where relevant.
 
 ---
 
 ## Tech Stack
 
 - **Frontend:** React, Vite, React Router, React‑Bootstrap, Recharts, FileSaver, XLSX, ESLint.
-- **Backend:** Node.js, Express, MongoDB/Mongoose, Passport (JWT, Google OAuth), dotenv, CORS.
+- **Backend:** Node.js, Express, MongoDB/Mongoose, Passport (JWT, Google OAuth), dotenv, CORS, Nodemailer.
 - **Testing:** (example) Mocha/Chai for unit tests (categories/budgets).
 - **Deployment:** Netlify/Vercel (frontend) + Render/Railway/Fly.io (backend).
 
@@ -98,43 +97,36 @@ Create `.env` files as needed.
 
 **Frontend (`.env` in the frontend root):**
 ```bash
+# Development
 VITE_API_URL=http://localhost:4000/api
+# Production
+# VITE_API_URL=https://nest-egg-tuwf.onrender.com/api
 ```
 
 **Backend (`.env` in the backend root):**
 ```bash
+NODE_ENV=production
 PORT=4000
-MONGO_URL=mongodb://localhost:27017/nestegg
-SESSION_SECRET=replace_me_with_a_long_random_string
-JWT_SECRET=replace_me_with_a_long_random_string
-CLIENT_URL=http://localhost:5173
 
-# Google OAuth (optional, if used)
-GOOGLE_CLIENT_ID=xxx.apps.googleusercontent.com
-GOOGLE_CLIENT_SECRET=xxx
-GOOGLE_CALLBACK_URL=http://localhost:4000/api/auth/google/callback
-```
+CLIENT_URL=https://your-nest-egg.onrender.com
 
-> Ensure CORS is configured so that the backend accepts requests from your frontend origin and uses `credentials: true` where necessary.
+MONGO_URI=<your_mongodb_uri>
+DB_NAME=nestegg
 
-### Frontend (React + Vite)
+JWT_SECRET=<your_long_random_secret>
 
-```bash
-# from the frontend folder
-npm install
-npm run dev       # dev server -> http://localhost:5173
-npm run build     # build to dist/
-npm run preview   # preview build locally
-```
+# Google OAuth
+GOOGLE_CLIENT_ID=<your_google_client_id>
+GOOGLE_CLIENT_SECRET=<your_google_client_secret>
+GOOGLE_CALLBACK_URL=https://nest-egg-tuwf.onrender.com/api/auth/google/callback
 
-### Backend (Node.js + Express + MongoDB)
-
-```bash
-# from the backend folder
-npm install
-npm run dev       # e.g., nodemon src/index.js
-# or
-npm start
+# Email (Password Reset)
+SMTP_HOST=smtp.gmail.com
+SMTP_PORT=587
+SMTP_USER=your_email@gmail.com
+SMTP_PASS=your_app_password
+RESET_TOKEN_EXPIRES_MIN=60
+APP_BASE_URL=https://your-nest-egg.onrender.com
 ```
 
 ---
@@ -149,113 +141,87 @@ npm start
 6. **Export**: use the “Export Excel” button on the Transactions page.  
 7. **Settings**: switch theme/language/currency; optionally “Reset demo data”.
 
-> Tip: Inputs sanitize numeric fields (e.g., amount/budget limits) and provide basic validation—clear error messages via i18n.
+---
+
+## Password Reset
+
+NestEgg supports **secure password recovery** via email link.  
+This feature uses **one-time tokens** stored as a hashed value in the database (expires after 60 minutes by default).
+
+### API Endpoints
+
+**Request reset email:**
+```bash
+POST /api/auth/request-reset
+Body: { "email": "user@example.com" }
+```
+
+**Reset password using token:**
+```bash
+POST /api/auth/reset-password
+Body: { "email": "user@example.com", "token": "string", "newPassword": "secret123" }
+```
+
+### Frontend Pages
+- `/forgot` — user enters email to request link  
+- `/reset?token=...&email=...` — form to set a new password
+
+### Security Notes
+- Tokens are hashed before storage using SHA‑256.
+- Tokens expire after `RESET_TOKEN_EXPIRES_MIN` minutes.
+- After reset, token fields are cleared.
+- Rate limiting and identical responses prevent email enumeration.
+- Uses `nodemailer` or `SendGrid` for SMTP delivery.
 
 ---
 
 ## Testing
 
-(If you include unit tests)
 ```bash
 npm run test
 ```
-- Include tests for at least categories/budgets logic (models/controllers/services).
-- Consider adding frontend tests (component rendering, context actions) if time permits.
+Covers categories, budgets, and authentication logic (register/login/reset).
 
 ---
 
 ## Deployment
 
 ### Frontend
-- Deploy the Vite build (`dist/`) to **Netlify** / **Vercel**.
-- Set `VITE_API_URL` to your deployed backend API (e.g., `https://your-backend.example.com/api`).
+- Deploy the Vite build (`dist/`) to **Netlify**, **Vercel**, or **Render**.
+- Set `VITE_API_URL` to your deployed backend API.
 
 ### Backend
-- Deploy to **Render** / **Railway** / **Fly.io** (or a VPS).  
-- Set environment variables (`MONGO_URL`, `SESSION_SECRET`, `JWT_SECRET`, `CLIENT_URL`, OAuth keys).  
-- Enable HTTPS, configure CORS to allow the frontend origin, and use secure cookies in production (e.g., `SameSite=Lax/Strict`, `Secure` where appropriate).
-
-> **Deliverables**: provide both live links (Frontend + API) in the top of this README when you deploy.
+- Deploy to **Render** / **Railway** / **Fly.io**.  
+- Configure `.env` with your production credentials.  
+- Use HTTPS, secure cookies, and proper CORS settings.
 
 ---
 
 ## Devlog
 
-Keep a running development log (update weekly). You can place it here or in `docs/devlog.md`.
-
-**Week 1 — Planning & Setup**  
-- Proposal drafted & approved; tech stack chosen.  
-- Repo initialized, Vite app scaffolded, Express API bootstrapped.  
-- Initial contexts (Auth/Settings) and basic routes.
-
-**Week 2 — Core Features**  
-- Categories & Transactions CRUD.  
-- Filters/sorting/search; amount sanitization; i18n keys for errors.
-
-**Week 3 — Budgets & Reports**  
-- Monthly budgets; progress bars; over‑limit handling.  
-- Pie/Bar charts; Excel export.
-
-**Week 4 — Auth & Polish**  
-- Email/password + Google OAuth; session cookies.  
-- Light/dark theme; a11y tweaks; README & screenshots.  
-- Final testing and deployment.
-
-**Challenges & Solutions:**  
-- CORS with credentials — configured on both sides, set correct origins and cookie attributes.  
-- Mixed IDs (`_id` vs `id`) — unified comparisons using `(doc._id || doc.id)`.  
-- i18n coverage — moved alerts/validation to `errors.*` keys.
-
-**Key Learnings:**  
-- Context API for domain state is lightweight and maintainable for this scope.  
-- Input sanitation UX (onBeforeInput/onPaste) improves data quality.  
-- Deployment environment variable management for multi-service apps.
+A detailed development log is available in the file  
+[devlog.md](./devlog.md)
 
 ---
 
 ## Future Improvements
 
 - Multi‑currency wallets and per‑transaction currency conversion.  
-- Bank CSV/OFX importers; Plaid integrations.  
-- Shared budgets, roles, and household collaboration.  
-- PWA + offline caching.  
-- E2E tests (Playwright/Cypress).  
-- Analytics dashboards with more dimensions (merchant, tags).
+- Bank CSV importers; Plaid integrations.  
+- Shared budgets and family collaboration.  
+- PWA support for offline usage.  
+- E2E tests with Playwright/Cypress.
 
 ---
 
 ## Screenshots
 
-> Add images or GIFs of Dashboard, Transactions, Budgets, Reports, Settings.
->
-> Example:
->
-> - `/docs/screenshots/dashboard.png`
-> - `/docs/screenshots/transactions.png`
-> - `/docs/screenshots/reports.png`
-
----
+All weekly screenshots and visual progress reports are available in the folder  
+[`/docs/screenshots/`](./docs/screenshots)
 
 ## Security & Privacy
 
-- Do not commit secrets or session files (e.g., `.env`, ).  
-- Use secure cookies in production and HTTPS everywhere.  
-- Validate & sanitize user inputs on both frontend and backend.  
-- Apply MongoDB indexes for unique constraints where needed.
-
----
-
-##  Testing Summary
-
-Automated tests implemented for all core API routes using:
-
-- **Mocha** – test runner  
-- **Chai** – assertions  
-- **Supertest** – HTTP endpoint testing  
-- **NYC** – code coverage with ESM loader support  
-- **Mocked Mongoose models** – no real DB connection required  
-
-### Run all tests
-```bash
-npm test
-
+- Secrets stored in `.env` files only.  
+- Secure HTTPS and cookie handling in production.  
+- Tokens hashed and short-lived.  
+- All user inputs validated and sanitized both client & server side.
