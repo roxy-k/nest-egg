@@ -75,12 +75,7 @@ export default function Register() {
           <Button type="submit" className="w-100" disabled={loading}>
             {loading ? t("auth.creating") : t("auth.signup")}
          </Button>
-          <div className="text-center mt-3">
-  <span>{t?.("auth.no_account") ?? "Don't have an account?"} </span>
-   <Link to="/register" className="text-primary text-decoration-none">
-     {t?.("auth.sign_up") ?? "Sign up"}
-   </Link>
- </div>
+  
         </Form>
       </Card.Body>
     </Card>
