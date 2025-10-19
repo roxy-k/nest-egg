@@ -70,27 +70,29 @@ useEffect(() => {
               required
             />
           </Form.Group>
-          <Form.Group className="mb-3 position-relative">
+          <Form.Group className="mb-3">
             <Form.Label>Password</Form.Label>
-            <Form.Control
-              type={showPassword ? "text" : "password"}
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-              required
-              className="pe-5"
-            />
-            <button
-              type="button"
-              className="btn btn-link text-muted position-absolute top-50 end-0 translate-middle-y pe-3 ps-1"
-              onClick={() => setShowPassword((prev) => !prev)}
-              aria-label={
-                showPassword
-                  ? t?.("auth.hide_password") ?? "Hide password"
-                  : t?.("auth.show_password") ?? "Show password"
-              }
-            >
-              {showPassword ? <FaEyeSlash aria-hidden="true" /> : <FaEye aria-hidden="true" />}
-            </button>
+            <div className="position-relative">
+              <Form.Control
+                type={showPassword ? "text" : "password"}
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                required
+                className="pe-5"
+              />
+              <button
+                type="button"
+                className="btn btn-link text-muted position-absolute top-50 end-0 translate-middle-y pe-3 ps-1"
+                onClick={() => setShowPassword((prev) => !prev)}
+                aria-label={
+                  showPassword
+                    ? t?.("auth.hide_password") ?? "Hide password"
+                    : t?.("auth.show_password") ?? "Show password"
+                }
+              >
+                {showPassword ? <FaEyeSlash aria-hidden="true" /> : <FaEye aria-hidden="true" />}
+              </button>
+            </div>
           </Form.Group>
           <Button type="submit" className="w-100" disabled={loading}>
             {loading ? t("auth.signing_in") : t("auth.login")}
