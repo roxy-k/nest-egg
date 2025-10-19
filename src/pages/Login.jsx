@@ -3,6 +3,7 @@ import { Form, Button, Card } from "react-bootstrap";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "../context/AuthContext.jsx";
 import { useSettings } from "../context/SettingsContext.jsx"
+import { Link } from "react-router-dom";
 
 const BASE = import.meta.env.VITE_API_URL || "http://localhost:4000/api";
 const googleSignIn = () => { window.location.href = `${BASE}/auth/google`; };
@@ -80,6 +81,12 @@ useEffect(() => {
            <Button type="submit" className="w-100" disabled={loading}>
             {loading ? t("auth.signing_in") : t("auth.login")}
           </Button>
+          + <div className="text-center mt-3">
+   <span>{t?.("auth.no_account") ?? "Don't have an account?"} </span>
+   <Link to="/register" className="text-primary text-decoration-none">
+     {t?.("auth.sign_up") ?? "Sign up"}
+   </Link>
+ </div>
         </Form>
       </Card.Body>
     </Card>
