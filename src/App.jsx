@@ -1,24 +1,20 @@
-import React from "react";
+import React, { lazy, Suspense } from "react";
 import { Routes, Route, Navigate } from "react-router-dom";
 import { Container } from "react-bootstrap";
 import { useAuth } from "./context/AuthContext.jsx";
 
 import AppNavbar from "./components/AppNavbar.jsx";
 
-import Dashboard from "./pages/Dashboard.jsx";
-import Transactions from "./pages/Transactions.jsx";
-import Categories from "./pages/Categories.jsx";
-import Budgets from "./pages/Budgets.jsx";
-import Settings from "./pages/Settings.jsx";
-
-import Login from "./pages/Login.jsx";
-import Register from "./pages/Register.jsx";
-import OAuth from "./pages/OAuth.jsx";
-import NotFound from "./pages/NotFound.jsx";
-import { lazy, Suspense } from "react";
-
+const Dashboard = lazy(() => import("./pages/Dashboard.jsx"));
+const Transactions = lazy(() => import("./pages/Transactions.jsx"));
+const Categories = lazy(() => import("./pages/Categories.jsx"));
+const Budgets = lazy(() => import("./pages/Budgets.jsx"));
 const Reports = lazy(() => import("./pages/Reports.jsx"));
-
+const Settings = lazy(() => import("./pages/Settings.jsx"));
+const Login = lazy(() => import("./pages/Login.jsx"));
+const Register = lazy(() => import("./pages/Register.jsx"));
+const OAuth = lazy(() => import("./pages/OAuth.jsx"));
+const NotFound = lazy(() => import("./pages/NotFound.jsx"));
 
 function PrivateRoute({ children }) {
   const { user, loading } = useAuth();
