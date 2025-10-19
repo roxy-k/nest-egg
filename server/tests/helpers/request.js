@@ -1,5 +1,4 @@
 import { Readable } from "node:stream";
-import supertest from "supertest";
 
 
 function createRequestStream(method, url, body, headers = {}) {
@@ -156,4 +155,27 @@ export async function request(app, { method = "GET", url = "/", headers = {}, bo
     headers: Object.fromEntries(res.headers.entries()),
   };
 }
- export default (app) => supertest(app);
+export default function createClient(app) {
+  return {
+    get(url, options = {}) {
+      return request(app, { method: "GET", url, ...options });
+    },
+    post(url, options = {}) {
+      return {
+        send(body) {
+          return request(app, { method: "POST", url, body, ...options });
+        },
+      };
+    },
+    put(url, options = {}) {
+      return {
+        send(body) {
+          return request(app, { method: "PUT", url, body, ...options });
+        },
+      };
+    },
+    delete(url, options = {}) {
+      return request(app, { method: "DELETE", url, ...options });
+    },
+  };
+}

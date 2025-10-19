@@ -50,25 +50,19 @@
     vertical-align: middle;
   }
 }
- .navbar-brand img {
+.navbar-brand {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.navbar-brand img {
   height: 28px;
   width: auto;
+  border-radius: 6px;
 }
 
-
-  .navbar-brand span {
-    font-size: 1rem;
-  }
-.navbar-brand img {
-  height: 22px;
+.navbar-brand span {
   font-size: 1rem;
-}
-
-  .navbar-brand div {
-    width: 36px !important;
-    height: 36px !important;
-  }
-.navbar-brand img {
-  width: 30px !important;
-  height: 30px !important;
+  font-weight: 600;
 }

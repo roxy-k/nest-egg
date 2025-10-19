@@ -1,6 +1,7 @@
 import express from "express";
 import jwt from "jsonwebtoken";
 import bcrypt from "bcryptjs";
+import crypto from "node:crypto";
 import { z } from "zod";
 import passport from "../passport.js";
 import User from "../models/User.js";
@@ -25,6 +26,14 @@ const cookieOptions = {
   path: "/",
   maxAge: 7 * 24 * 60 * 60 * 1000,
 };
+
+const RESET_TOKEN_BYTES = 32;
+const RESET_TOKEN_TTL_MIN = Number(process.env.RESET_TOKEN_EXPIRES_MIN || 60);
+
+const hashResetToken = (token) =>
+  crypto.createHash("sha256").update(String(token)).digest("hex");
+
+const generateResetToken = () => crypto.randomBytes(RESET_TOKEN_BYTES).toString("hex");
 
 
 
@@ -60,6 +69,26 @@ const changePasswordSchema = z.object({
   currentPassword: z
     .string({ required_error: "Current password is required" })
     .min(6, "Password must be at least 6 characters."),
+  newPassword: z
+    .string({ required_error: "New password is required" })
+    .min(6, "Password must be at least 6 characters."),
+});
+
+const resetRequestSchema = z.object({
+  email: z
+    .string({ required_error: "Email is required" })
+    .trim()
+    .toLowerCase()
+    .email("Invalid email"),
+});
+
+const resetPasswordSchema = z.object({
+  email: z
+    .string({ required_error: "Email is required" })
+    .trim()
+    .toLowerCase()
+    .email("Invalid email"),
+  token: z.string({ required_error: "Token is required" }).min(1, "Token is required"),
   newPassword: z
     .string({ required_error: "New password is required" })
     .min(6, "Password must be at least 6 characters."),
@@ -127,28 +156,22 @@ router.post("/login", async (req, res) => {
       return res.status(400).json({ error: "Email and password are required" });
     }
 
-    const user = await User.findOne({ email }).lean(false);
-if (!user) {
-  return res.status(401).json({ error: "Invalid credentials" });
-}
+    const user = await User.findOne({ email });
+    if (!user || !user.passwordHash) {
+      return res.status(401).json({ error: "Invalid credentials" });
+    }
 
-const ok = await bcrypt.compare(password, user.passwordHash);
-if (!ok) {
-  return res.status(401).json({ error: "Invalid credentials" });
-}
+    const ok = await bcrypt.compare(password, user.passwordHash);
+    if (!ok) {
+      return res.status(401).json({ error: "Invalid credentials" });
+    }
 
-const token = jwt.sign(
-  { id: user.id, email: user.email, name: user.name || "" },
-  JWT_SECRET,
-  { expiresIn: "7d" }
-);
-
-res.cookie("token", token, cookieOptions);
-return res.status(200).json({
-  user: { id: user.id, email: user.email, name: user.name || "" },
-  token,
-});
-
+    const token = signToken(user);
+    res.cookie("token", token, cookieOptions);
+    return res.status(200).json({
+      user: buildUserPayload(user),
+      token,
+    });
   } catch (err) {
     console.error("Login error:", err);
     return res.status(500).json({ error: "Server error" });
@@ -189,6 +212,8 @@ router.post("/change-password", requireAuth, async (req, res) => {
     }
 
     user.passwordHash = await bcrypt.hash(newPassword, 12);
+    user.passwordResetTokenHash = "";
+    user.passwordResetExpiresAt = null;
     await user.save();
 
     const token = signToken(user);
@@ -197,6 +222,79 @@ router.post("/change-password", requireAuth, async (req, res) => {
   } catch (err) {
     console.error("Change password error:", err);
     return res.status(500).json({ error: "Unable to change password." });
+  }
+});
+
+router.post("/request-reset", async (req, res) => {
+  const parsed = resetRequestSchema.safeParse(req.body);
+  if (!parsed.success) {
+    const msg = parsed.error.errors?.[0]?.message || "Invalid data";
+    return res.status(400).json({ error: msg });
+  }
+
+  const { email } = parsed.data;
+
+  try {
+    const user = await User.findOne({ email });
+    let rawToken = "";
+
+    if (user && user.provider === "local") {
+      rawToken = generateResetToken();
+      user.passwordResetTokenHash = hashResetToken(rawToken);
+      user.passwordResetExpiresAt = new Date(Date.now() + RESET_TOKEN_TTL_MIN * 60 * 1000);
+      await user.save();
+    }
+
+    const payload = { ok: true };
+    if (process.env.NODE_ENV === "test" && rawToken) {
+      payload.token = rawToken;
+    }
+    return res.json(payload);
+  } catch (err) {
+    console.error("Request reset error:", err);
+    return res.status(500).json({ error: "Unable to initiate password reset" });
+  }
+});
+
+router.post("/reset-password", async (req, res) => {
+  const parsed = resetPasswordSchema.safeParse(req.body);
+  if (!parsed.success) {
+    const msg = parsed.error.errors?.[0]?.message || "Invalid data";
+    return res.status(400).json({ error: msg });
+  }
+
+  const { email, token, newPassword } = parsed.data;
+
+  try {
+    const user = await User.findOne({ email });
+    if (!user || user.provider !== "local") {
+      return res.status(400).json({ error: "Invalid or expired token" });
+    }
+
+    if (
+      !user.passwordResetTokenHash ||
+      !user.passwordResetExpiresAt ||
+      user.passwordResetExpiresAt.getTime() < Date.now()
+    ) {
+      return res.status(400).json({ error: "Invalid or expired token" });
+    }
+
+    const hashed = hashResetToken(token);
+    if (user.passwordResetTokenHash !== hashed) {
+      return res.status(400).json({ error: "Invalid or expired token" });
+    }
+
+    user.passwordHash = await bcrypt.hash(newPassword, 12);
+    user.passwordResetTokenHash = "";
+    user.passwordResetExpiresAt = null;
+    await user.save();
+
+    const authToken = signToken(user);
+    res.cookie("token", authToken, cookieOptions);
+    return res.json({ ok: true, user: buildUserPayload(user), token: authToken });
+  } catch (err) {
+    console.error("Reset password error:", err);
+    return res.status(500).json({ error: "Unable to reset password" });
   }
 });
 

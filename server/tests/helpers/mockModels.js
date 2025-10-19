@@ -1,6 +1,8 @@
 import mongoose from "mongoose";
-import Budget from '../../src/models/Budget.js';
-import Category from '../../src/models/Category.js';
+import Budget from "../../src/models/Budget.js";
+import Category from "../../src/models/Category.js";
+import Transaction from "../../src/models/Transaction.js";
+import User from "../../src/models/User.js";
 
 const SHARED_OWNER_KEY = "shared";
 
@@ -36,6 +38,13 @@ function createDoc(initial) {
     enumerable: false,
     value() {
       return doc.toObject();
+    },
+  });
+
+  Object.defineProperty(doc, "id", {
+    enumerable: false,
+    get() {
+      return String(doc._id);
     },
   });
 
@@ -84,6 +93,29 @@ function sortDocs(list, sortSpec = {}) {
     }
     return 0;
   });
+}
+
+function createQueryResult(doc) {
+  const promise = Promise.resolve(doc ?? null);
+  const query = {
+    lean(flag = true) {
+      if (!doc) return Promise.resolve(null);
+      if (flag === false) return Promise.resolve(doc);
+      return Promise.resolve(doc.toObject ? doc.toObject({ versionKey: false }) : { ...doc });
+    },
+    select() {
+      return Promise.resolve(doc);
+    },
+    exec() {
+      return Promise.resolve(doc);
+    },
+  };
+  query.then = promise.then.bind(promise);
+  query.catch = promise.catch.bind(promise);
+  if (promise.finally) {
+    query.finally = promise.finally.bind(promise);
+  }
+  return query;
 }
 
 export function mockBudgetModel() {
@@ -209,6 +241,129 @@ export function mockCategoryModel() {
       if (originals.find) Category.find = originals.find;
       if (originals.create) Category.create = originals.create;
       if (originals.findOneAndDelete) Category.findOneAndDelete = originals.findOneAndDelete;
+    },
+  };
+}
+
+export function mockTransactionModel() {
+  const store = [];
+  const originals = {
+    find: Transaction.find?.bind(Transaction),
+    create: Transaction.create?.bind(Transaction),
+    findOneAndUpdate: Transaction.findOneAndUpdate?.bind(Transaction),
+    findOneAndDelete: Transaction.findOneAndDelete?.bind(Transaction),
+    deleteMany: Transaction.deleteMany?.bind(Transaction),
+  };
+
+  Transaction.find = (query = {}) => ({
+    sort(sortSpec = {}) {
+      return Promise.resolve(sortDocs(store.filter((doc) => matches(doc, query)), sortSpec));
+    },
+  });
+
+  Transaction.create = async (payload = {}) => {
+    const doc = createDoc(payload);
+    store.push(doc);
+    return doc;
+  };
+
+  Transaction.findOneAndUpdate = async (query = {}, update = {}, options = {}) => {
+    const doc = store.find((item) => matches(item, query));
+    if (!doc) return null;
+    Object.assign(doc, update, { updatedAt: new Date() });
+    return options?.new === false ? { ...doc } : doc;
+  };
+
+  Transaction.findOneAndDelete = async (query = {}) => {
+    const index = store.findIndex((doc) => matches(doc, query));
+    if (index === -1) return null;
+    const [removed] = store.splice(index, 1);
+    return removed;
+  };
+
+  Transaction.deleteMany = async (query = {}) => {
+    const keep = [];
+    let deletedCount = 0;
+    for (const doc of store) {
+      if (matches(doc, query)) {
+        deletedCount += 1;
+      } else {
+        keep.push(doc);
+      }
+    }
+    store.length = 0;
+    store.push(...keep);
+    return { deletedCount };
+  };
+
+  return {
+    store,
+    reset() {
+      store.length = 0;
+    },
+    restore() {
+      if (originals.find) Transaction.find = originals.find;
+      if (originals.create) Transaction.create = originals.create;
+      if (originals.findOneAndUpdate) Transaction.findOneAndUpdate = originals.findOneAndUpdate;
+      if (originals.findOneAndDelete) Transaction.findOneAndDelete = originals.findOneAndDelete;
+      if (originals.deleteMany) Transaction.deleteMany = originals.deleteMany;
+    },
+  };
+}
+
+export function mockUserModel() {
+  const store = [];
+  const originals = {
+    findOne: User.findOne?.bind(User),
+    create: User.create?.bind(User),
+    findById: User.findById?.bind(User),
+    deleteMany: User.deleteMany?.bind(User),
+  };
+
+  const findByQuery = (query = {}) =>
+    store.find((doc) => matches(doc, query)) || null;
+
+  User.findOne = (query = {}) => createQueryResult(findByQuery(query));
+
+  User.create = async (payload = {}) => {
+    if (store.some((doc) => doc.email === payload.email)) {
+      const err = new Error("Duplicate email");
+      err.code = 11000;
+      throw err;
+    }
+    const doc = createDoc({
+      provider: "local",
+      passwordResetTokenHash: "",
+      passwordResetExpiresAt: null,
+      ...payload,
+    });
+    store.push(doc);
+    return doc;
+  };
+
+  User.findById = (id) => {
+    const doc = store.find((item) => String(item._id) === String(id)) || null;
+    const query = createQueryResult(doc);
+    query.select = () => Promise.resolve(doc);
+    return query;
+  };
+
+  User.deleteMany = async () => {
+    const deletedCount = store.length;
+    store.length = 0;
+    return { deletedCount };
+  };
+
+  return {
+    store,
+    reset() {
+      store.length = 0;
+    },
+    restore() {
+      if (originals.findOne) User.findOne = originals.findOne;
+      if (originals.create) User.create = originals.create;
+      if (originals.findById) User.findById = originals.findById;
+      if (originals.deleteMany) User.deleteMany = originals.deleteMany;
     },
   };
 }

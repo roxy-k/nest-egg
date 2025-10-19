@@ -26,10 +26,10 @@ const Body = z.object({
   limit: z.coerce.number().positive("limit must be > 0"),
 });
 
-const computeBudgetId = (ownerKey, categoryId, month) =>
+export const computeBudgetId = (ownerKey, categoryId, month) =>
   [ownerKey, categoryId, month].map((part) => String(part ?? "").trim()).join(":");
 
-function normalizePayload(data, ownerKey) {
+export function normalizePayload(data, ownerKey) {
   const { categoryId, month, limit } = data;
   const payload = {
     ownerKey,
