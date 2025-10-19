@@ -4,6 +4,7 @@ import { useCategories } from "../context/CategoriesContext.jsx";
 import { useTransactions } from "../context/TransactionsContext.jsx";
 import { useSettings } from "../context/SettingsContext.jsx";
 import TransactionsExportExcel from "../components/TransactionsExportExcel.jsx";
+import { useNavigate } from "react-router-dom";
 
 function sanitizeAmount(raw) {
   let v = raw.replace(/[^\d.]/g, "");
@@ -16,6 +17,7 @@ function sanitizeAmount(raw) {
 const monthKey = (iso) => iso?.slice(0, 7);
 
 export default function Transactions() {
+  const navigate = useNavigate();
   const { categories } = useCategories();
   const { transactions, addTransaction, removeTransaction, updateTransaction, loading } = useTransactions();
   const { t,formatCurrency } = useSettings();
@@ -184,17 +186,25 @@ bv = (categories.find((c) => (c._id || c.id) === b.categoryId)?.name || b.catego
           </Form.Select>
         </Col>
         <Col md={3}>
-          <Form.Select value={fCategory} onChange={(e) => setFCategory(e.target.value)}>
-  <option value="">{t("transactions.all_categories")}</option>
+        <Form.Select
+  value={form.categoryId}
+  onChange={(e) => {
+    if (e.target.value === "add-category") {
+      navigate("/categories"); // редирект на страницу категорий
+    } else {
+      setForm((f) => ({ ...f, categoryId: e.target.value }));
+    }
+  }}
+>
+  <option value="">All categories</option>
   {categories.map((c) => (
-    <option
-      key={String(c._id || c.id)}
-      value={String(c._id || c.id)}
-    >
+    <option key={c.id} value={c.id}>
       {c.name}
     </option>
   ))}
++ <option value="add-category">➕ Add new category</option>
 </Form.Select>
+
 
         </Col>
         <Col md={3}>

@@ -74,8 +74,17 @@ export default function Register() {
           </Form.Group>
           <Button type="submit" className="w-100" disabled={loading}>
             {loading ? t("auth.creating") : t("auth.signup")}
-         </Button>
-  
+          </Button>
+          <div className="mt-4">
+            <Button
+              type="button"
+              variant="outline-primary"
+              className="w-100"
+              onClick={() => navigate("/login")}
+            >
+              Log In
+            </Button>
+          </div>
         </Form>
       </Card.Body>
     </Card>
