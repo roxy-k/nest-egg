@@ -1,13 +1,11 @@
-import React, { useMemo, useState } from "react";
-import { Alert, Form, Row, Col, Card } from "react-bootstrap";
-import { PieChart, Pie, Cell, Tooltip, ResponsiveContainer, BarChart, XAxis, YAxis, Bar, Legend } from "recharts";
+import React, { useMemo, useState, lazy, Suspense } from "react";
+import { Row, Col } from "react-bootstrap";
 import { useTransactions } from "../context/TransactionsContext.jsx";
 import { useCategories } from "../context/CategoriesContext.jsx";
 import { useSettings } from "../context/SettingsContext.jsx";
 
-
-
-const COLORS = ["#8884d8", "#82ca9d", "#ffc658", "#ff7f50", "#00c49f", "#0088fe", "#ffbb28"];
+const ExpenseByCategorySection = lazy(() => import("../components/reports/ExpenseByCategorySection.jsx"));
+const IncomeTrendsSection = lazy(() => import("../components/reports/IncomeTrendsSection.jsx"));
 
 const monthKey = (iso) => iso?.slice(0, 7);
 export default function Reports() {
@@ -50,59 +48,25 @@ return [...map.entries()]
 
       <Row className="g-4">
         <Col md={6}>
-          <Card className="h-100">
-            <Card.Body>
-              <Card.Title>{t("reports.by_category")}</Card.Title>
-
-              <Form.Group className="mb-3">
-                <Form.Label>{t("reports.select_month")}</Form.Label>
-                <Form.Control
-                  type="month"
-                  value={month}
-                  onChange={(e) => setMonth(e.target.value)}
-                />
-              </Form.Group>
-              {expenseData.length === 0 ? (
-               <Alert variant="info">{t("reports.empty_month", { month })}</Alert>
-              ) : (
-                <ResponsiveContainer width="100%" height={300}>
-                  <PieChart>
-                    <Pie
-                      data={expenseData}
-                      dataKey="value"
-                      nameKey="name"
-                      outerRadius={120}
-                      label
-                    >
-                      {expenseData.map((_, i) => (
-                        <Cell key={i} fill={COLORS[i % COLORS.length]} />
-                      ))}
-                    </Pie>
-<Tooltip formatter={(v) => (formatCurrency ? formatCurrency(v) : v)} />                  </PieChart>
-                </ResponsiveContainer>
-              )}
-            </Card.Body>
-          </Card>
+          <Suspense fallback={<div className="p-5 text-center border rounded h-100">Loading…</div>}>
+            <ExpenseByCategorySection
+              t={t}
+              month={month}
+              onMonthChange={setMonth}
+              expenseData={expenseData}
+              formatCurrency={formatCurrency}
+            />
+          </Suspense>
         </Col>
 
         <Col md={6}>
-          <Card className="h-100">
-            <Card.Body>
-             <Card.Title>{t("reports.income_trends")}</Card.Title>
-              {incomeData.length === 0 ? (
-          <Alert variant="info">{t("dashboard.no_data")}</Alert>              ) : (
-                <ResponsiveContainer width="100%" height={300}>
-                  <BarChart data={incomeData}>
-                    <XAxis dataKey="month" />
-                    <YAxis />
-                    <Tooltip formatter={(v) => (formatCurrency ? formatCurrency(v) : v)} />
-                    <Legend />
-                    <Bar dataKey="value" fill="#82ca9d" name={t("dashboard.income")} />
-                  </BarChart>
-                </ResponsiveContainer>
-              )}
-            </Card.Body>
-          </Card>
+          <Suspense fallback={<div className="p-5 text-center border rounded h-100">Loading…</div>}>
+            <IncomeTrendsSection
+              t={t}
+              incomeData={incomeData}
+              formatCurrency={formatCurrency}
+            />
+          </Suspense>
         </Col>
       </Row>
     </>
