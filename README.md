@@ -172,9 +172,10 @@ Body: { "email": "user@example.com", "token": "string", "newPassword": "secret12
 - After reset, token fields are cleared.
 - Rate limiting and identical responses prevent email enumeration.
 - Set the following environment variables to enable reset emails:
-  - `SMTP_URL` **or** (`SMTP_HOST`, `SMTP_PORT`, `SMTP_USER`, `SMTP_PASS`)
-  - Optional: `RESET_EMAIL_FROM`, `RESET_EMAIL_SUBJECT`, `RESET_EMAIL_URL`
-- Uses `nodemailer` for SMTP delivery.
+  - `BREVO_API_KEY`
+  - `RESET_EMAIL_FROM` (e.g. `NestEgg <no-reply@example.com>`)
+  - `RESET_EMAIL_URL` (e.g. `https://your-frontend/reset`)
+- Uses the Brevo transactional email API (via `sib-api-v3-sdk`).
 
 ---
 

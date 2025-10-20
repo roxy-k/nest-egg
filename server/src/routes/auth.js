@@ -6,18 +6,13 @@ import { z } from "zod";
 import passport from "../passport.js";
 import User from "../models/User.js";
 import { requireAuth } from "../middleware/auth.js";
-import { sendPasswordResetEmail, isResetEmailConfigured } from "../utils/mailer.js";
+import { sendPasswordResetEmail } from "../lib/mailer.js";
 
 const router = express.Router();
 
 const CLIENT =
   process.env.CLIENT_URL ||
   "https://your-nest-egg.onrender.com";
-
-const RESET_LINK_BASE =
-  process.env.RESET_EMAIL_URL ||
-  `${(CLIENT || "http://localhost:5173").replace(/\/$/, "")}/reset`;
-
 
 const JWT_SECRET = process.env.JWT_SECRET || "dev_secret";
 
@@ -229,7 +224,7 @@ router.post("/change-password", requireAuth, async (req, res) => {
   }
 });
 
-router.post("/request-reset", async (req, res) => {
+const handleRequestReset = async (req, res) => {
   const parsed = resetRequestSchema.safeParse(req.body);
   if (!parsed.success) {
     const msg = parsed.error.errors?.[0]?.message || "Invalid data";
@@ -239,10 +234,15 @@ router.post("/request-reset", async (req, res) => {
   const { email } = parsed.data;
 
   try {
-    const emailSupported = isResetEmailConfigured();
+    const emailSupported = Boolean(
+      process.env.BREVO_API_KEY &&
+        process.env.RESET_EMAIL_FROM &&
+        process.env.RESET_EMAIL_URL,
+    );
     const user = await User.findOne({ email });
     let rawToken = "";
-    let emailResult = null;
+    let emailSent = false;
+    let emailError;
 
     if (user && user.provider === "local") {
       rawToken = generateResetToken();
@@ -251,22 +251,20 @@ router.post("/request-reset", async (req, res) => {
       await user.save();
 
       if (emailSupported) {
-        emailResult = await sendPasswordResetEmail({
+        try {
+          await sendPasswordResetEmail({
             to: user.email,
-            email: user.email,
             name: user.name || "",
             token: rawToken,
-            baseUrl: RESET_LINK_BASE,
-        });
-        if (!emailResult?.ok) {
-          const reason = emailResult?.reason || "send_failed";
-          console.warn("Password reset email not sent:", reason);
-          if (reason !== "timeout") {
-            return res.status(500).json({
-              error: "Unable to send password reset email.",
-              reason,
-            });
-          }
+          });
+          emailSent = true;
+        } catch (err) {
+          emailError = err?.message || "send_failed";
+          console.error("Password reset email send error:", emailError);
+          return res.status(500).json({
+            error: "Unable to send password reset email.",
+            reason: emailError,
+          });
         }
       }
     }
@@ -274,8 +272,8 @@ router.post("/request-reset", async (req, res) => {
     const payload = {
       ok: true,
       emailSupported: Boolean(emailSupported),
-      emailSent: Boolean(emailResult?.ok),
-      emailError: emailResult?.ok ? undefined : emailResult?.reason || undefined,
+      emailSent,
+      emailError,
     };
     if (process.env.NODE_ENV === "test" && rawToken) {
       payload.token = rawToken;
@@ -285,7 +283,10 @@ router.post("/request-reset", async (req, res) => {
     console.error("Request reset error:", err);
     return res.status(500).json({ error: "Unable to initiate password reset" });
   }
-});
+};
+
+router.post("/request-reset", handleRequestReset);
+router.post("/forgot", handleRequestReset);
 
 router.post("/reset-password", async (req, res) => {
   const parsed = resetPasswordSchema.safeParse(req.body);
