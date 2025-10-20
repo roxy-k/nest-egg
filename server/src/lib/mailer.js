@@ -15,7 +15,8 @@ export async function sendPasswordResetEmail({ to, name = "", token }) {
     throw new Error("reset_email_url_missing");
   }
 
-  const resetUrl = `${baseUrl}?token=${encodeURIComponent(token)}`;
+  const separator = baseUrl.includes("?") ? "&" : "?";
+  const resetUrl = `${baseUrl}${separator}token=${encodeURIComponent(token)}&email=${encodeURIComponent(to)}`;
 
   const htmlContent = `
     <div style="font-family:system-ui;max-width:560px;margin:0 auto;padding:24px;color:#111;line-height:1.5">
