@@ -182,6 +182,8 @@
     "reset_password_mismatch": "Passwords do not match.",
     "reset_invalid_link": "This reset link is invalid or has expired.",
     "reset_success": "Password updated. Redirecting…",
-    "reset_email_disabled": "Password emails are not configured. Please contact support."
+    "reset_email_disabled": "Password emails are not configured. Please contact support.",
+    "reset_email_failed": "We couldn't send the reset email. Please try again.",
+    "reset_email_timeout": "Sending the reset email timed out. Please retry in a moment."
   }
 }

@@ -74,6 +74,14 @@ export default function Settings() {
         setResetEmailState({ success: false, error: t("auth.reset_email_disabled") });
         return;
       }
+      if (result?.emailSent === false && result?.emailError === "timeout") {
+        setResetEmailState({ success: false, error: t("auth.reset_email_timeout") });
+        return;
+      }
+      if (result?.emailSent === false) {
+        setResetEmailState({ success: false, error: t("auth.reset_email_failed") });
+        return;
+      }
       setResetEmailState({ success: true, error: "" });
     } catch (err) {
       setResetEmailState({

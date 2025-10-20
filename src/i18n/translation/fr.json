@@ -146,6 +146,8 @@
     "reset_password_mismatch": "Les mots de passe ne correspondent pas.",
     "reset_invalid_link": "Ce lien de réinitialisation est invalide ou expiré.",
     "reset_success": "Mot de passe mis à jour. Redirection…",
-    "reset_email_disabled": "L'envoi d'e-mails de réinitialisation n'est pas configuré. Contactez le support."
+    "reset_email_disabled": "L'envoi d'e-mails de réinitialisation n'est pas configuré. Contactez le support.",
+    "reset_email_failed": "Impossible d'envoyer l'e-mail de réinitialisation. Réessayez.",
+    "reset_email_timeout": "L'envoi de l'e-mail a expiré. Réessayez dans un instant."
   }
 }

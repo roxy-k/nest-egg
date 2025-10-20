@@ -1,4 +1,4 @@
-import React, { useMemo, useState, useEffect } from "react";
+import React, { useMemo, useState, useEffect, useCallback } from "react";
 import { Table, Button, Modal, Form, ProgressBar, Badge, InputGroup } from "react-bootstrap";
 import { useCategories } from "../context/CategoriesContext.jsx";
 import { useTransactions } from "../context/TransactionsContext.jsx";
@@ -7,6 +7,7 @@ import { useSettings } from "../context/SettingsContext.jsx";
 import { useNavigate } from "react-router-dom";
 
 const monthKey = (isoDate) => isoDate?.slice(0, 7); 
+const canonicalCategoryId = (cat) => String((cat?._id ?? cat?.id) ?? "");
 
 export default function Budgets() {
   const navigate = useNavigate();
@@ -38,6 +39,36 @@ export default function Budgets() {
     setForm((p) => ({ ...p, month: `${yy}-${mm}` }));
   }, [yy, mm]);
 
+  const aliasToCanonical = useMemo(() => {
+    const map = new Map();
+    categories.forEach((cat) => {
+      const canonical = canonicalCategoryId(cat);
+      if (!canonical) return;
+      const aliases = [cat._id, cat.id].filter(Boolean).map((value) => String(value));
+      if (aliases.length === 0) aliases.push(canonical);
+      aliases.forEach((alias) => map.set(alias, canonical));
+    });
+    return map;
+  }, [categories]);
+
+  const normalizeCategoryId = useCallback(
+    (value) => {
+      const key = String(value ?? "");
+      return aliasToCanonical.get(key) || key;
+    },
+    [aliasToCanonical]
+  );
+
+  const findCategoryById = useCallback(
+    (value) => {
+      const canonical = normalizeCategoryId(value);
+      return (
+        categories.find((cat) => canonicalCategoryId(cat) === canonical) || null
+      );
+    },
+    [categories, normalizeCategoryId]
+  );
+
   const open = (budget = null) => {
     if (budget) {
       setEditing(budget);
@@ -45,7 +76,7 @@ export default function Budgets() {
       if (year) setYy(year);
       if (month) setMm(month.padStart(2, "0"));
       setForm({
-        categoryId: String(budget.categoryId || ""),
+        categoryId: normalizeCategoryId(budget.categoryId),
         month: budget.month,
         limit:
           typeof budget.limit === "number"
@@ -169,11 +200,15 @@ alert(t("errors.limit_min"))
     const map = new Map();
     for (const t of transactions) {
       if (t.type !== "expense") continue;
-      const key = `${t.categoryId}:${monthKey(t.date)}`;
+      const month = monthKey(t.date);
+      if (!month) continue;
+      const catId = normalizeCategoryId(t.categoryId);
+      if (!catId) continue;
+      const key = `${catId}:${month}`;
       map.set(key, (map.get(key) || 0) + (Number(t.amount) || 0));
     }
     return map;
-  }, [transactions]);
+  }, [transactions, normalizeCategoryId]);
 
   return (
     <>
@@ -198,11 +233,11 @@ alert(t("errors.limit_min"))
           {budgets.length === 0 ? (
             <tr><td colSpan={6} className="text-center text-muted">{t("budgets.empty")}</td></tr>
           ) : budgets.map((b) => {
-            const cat = categories.find(
-              (c) => c.id === b.categoryId || c._id === b.categoryId
-            );
-            const used = spendByCatMonth.get(`${b.categoryId}:${b.month}`) || 0;
-            const pct = Math.min(100, Math.round((used / b.limit) * 100 || 0));
+            const canonicalId = normalizeCategoryId(b.categoryId);
+            const cat = findCategoryById(b.categoryId);
+            const used = spendByCatMonth.get(`${canonicalId}:${b.month}`) || 0;
+            const limit = Number(b.limit) || 0;
+            const pct = limit > 0 ? Math.min(100, Math.round((used / limit) * 100 || 0)) : 0;
             const variant = pct < 70 ? "success" : pct < 100 ? "warning" : "danger";
             return (
                   <tr key={b._id || b.id}>
@@ -252,14 +287,17 @@ alert(t("errors.limit_min"))
               <InputGroup>
                 <Form.Select name="categoryId" value={form.categoryId} onChange={onChange}>
                   <option value="">{t("budgets.select_category")}</option>
-                  {categories.map((c) => (
+                  {categories.map((c) => {
+                    const value = canonicalCategoryId(c);
+                    return (
                     <option
-                      key={String(c.id || c._id)}
-                      value={String(c.id || c._id)}
+                      key={value}
+                      value={value}
                     >
                       {c.name}
                     </option>
-                  ))}
+                  );
+                  })}
                 </Form.Select>
                 <Button variant="outline-primary" onClick={openCategoriesPage}>
                   {t("categories.add_title")}

@@ -242,6 +242,7 @@ router.post("/request-reset", async (req, res) => {
     const emailSupported = isResetEmailConfigured();
     const user = await User.findOne({ email });
     let rawToken = "";
+    let emailResult = null;
 
     if (user && user.provider === "local") {
       rawToken = generateResetToken();
@@ -250,27 +251,32 @@ router.post("/request-reset", async (req, res) => {
       await user.save();
 
       if (emailSupported) {
-        try {
-          const result = await sendPasswordResetEmail({
+        emailResult = await sendPasswordResetEmail({
             to: user.email,
             email: user.email,
             name: user.name || "",
             token: rawToken,
             baseUrl: RESET_LINK_BASE,
-          });
-          if (!result?.ok) {
-            console.warn(
-              "Password reset email not sent:",
-              result?.reason || "unknown_reason",
-            );
+        });
+        if (!emailResult?.ok) {
+          const reason = emailResult?.reason || "send_failed";
+          console.warn("Password reset email not sent:", reason);
+          if (reason !== "timeout") {
+            return res.status(500).json({
+              error: "Unable to send password reset email.",
+              reason,
+            });
           }
-        } catch (err) {
-          console.error("Password reset email send error:", err?.message || err);
         }
       }
     }
 
-    const payload = { ok: true, emailSupported: Boolean(emailSupported) };
+    const payload = {
+      ok: true,
+      emailSupported: Boolean(emailSupported),
+      emailSent: Boolean(emailResult?.ok),
+      emailError: emailResult?.ok ? undefined : emailResult?.reason || undefined,
+    };
     if (process.env.NODE_ENV === "test" && rawToken) {
       payload.token = rawToken;
     }

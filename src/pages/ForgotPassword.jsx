@@ -29,6 +29,14 @@ export default function ForgotPassword() {
         setError(t("auth.reset_email_disabled"));
         return;
       }
+      if (result?.emailSent === false && result?.emailError === "timeout") {
+        setError(t("auth.reset_email_timeout"));
+        return;
+      }
+      if (result?.emailSent === false) {
+        setError(t("auth.reset_email_failed"));
+        return;
+      }
       setSuccess(true);
     } catch (err) {
       setError(err.message || t("errors.unknown"));
