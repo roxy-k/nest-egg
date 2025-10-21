@@ -280,6 +280,14 @@ A detailed development log is available in the file
 All weekly screenshots and visual progress reports are available in the folder  
 [`/docs/screenshots/`](./docs/screenshots) — code snippets live alongside in [`/docs/snippets/`](./docs/snippets)
 
+## Demo Video
+
+🎥 Watch a short walkthrough of NestEgg in action:
+
+- [▶️ View Demo Video (MP4, 90 sec)](./docs/demo.mov)
+
+*(If your browser doesn’t play .mov directly, download the file or open in QuickTime.)*
+
 ## Security & Privacy
 
 - Secrets stored in `.env` files only.  

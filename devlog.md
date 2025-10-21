@@ -107,6 +107,9 @@ A running log of the NestEgg capstone project: weekly updates, challenges, solut
 - Implemented password reset via email with hashed tokens (Brevo API integration).
 - Refined alerts to map backend errors to translation keys in Budgets/Login; updated dictionaries accordingly.
 - Introduced GitHub Actions workflow (`npm ci`, server tests, optional client tests, lint) and Husky + lint-staged pre-commit hook.
+- 90-second walkthrough video showing login, transactions, budgets, and reports.  
+File: `docs/demo.mov`
+
 
 ### Challenges & Solutions
 - **Prod CORS issues:** mismatched origins blocked credentials.  
