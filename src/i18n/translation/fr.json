@@ -125,9 +125,12 @@
   "reports": {
     "title": "Rapports",
     "by_category": "Par catégorie",
-    "income_trends": "Tendances des revenus par mois",
+    "expenses_by_category": "Dépenses par catégorie",
+    "income_trends": "Revenus par mois",
     "select_month": "Choisir le mois",
     "empty_month": "Aucune dépense pour {month}",
+    "tooltip_amount": "Montant : {amount}",
+    "tooltip_month": "Mois : {month}",
     "export": "Exporter",
     "import": "Importer",
     "transactions": "Transactions"

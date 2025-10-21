@@ -99,8 +99,9 @@
   "reports": {
     "title": "Reports",
     "by_category": "By Category",
+    "expenses_by_category": "Expenses by Category",
     "by_month": "By Month",
-    "income_trends": "Income Trends by Month",
+    "income_trends": "Income by Month",
     "select_month": "Select month",
     "export": "Export",
     "import": "Import",
@@ -108,6 +109,8 @@
     "upload_json": "Upload JSON",
     "empty": "No data for the report",
     "empty_month": "No expense data for {month}",
+    "tooltip_amount": "Amount: {amount}",
+    "tooltip_month": "Month: {month}",
     "transactions": "Transactions"
   },
   "settings": {

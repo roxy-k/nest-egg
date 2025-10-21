@@ -294,3 +294,15 @@ All weekly screenshots and visual progress reports are available in the folder
 - Secure HTTPS and cookie handling in production.  
 - Tokens hashed and short-lived.  
 - All user inputs validated and sanitized both client & server side.
+
+
+## For Instructor Testing
+
+To run the project locally:
+
+```bash
+git clone https://github.com/roxy-k/nest-egg.git
+cd nest-egg
+npm install
+npm run dev          # start frontend
+npm run dev --workspace server   # start backend
