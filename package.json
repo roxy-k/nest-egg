@@ -16,7 +16,7 @@
     "test:client:watch": "vitest",
     "test:client:cov": "vitest run --coverage",
     "test:cov": "npm run test:server:cov && npm run test:client:cov",
-    "prepare": "husky"
+    "prepare": "husky || true"
   },
   "dependencies": {
     "bootstrap": "^5.3.8",
