@@ -106,7 +106,7 @@ export function BudgetsProvider({ children }) {
       !Number.isFinite(payload.limit) ||
       payload.limit < 0.01
     ) {
-      throw new Error("Invalid budget payload.");
+      throw new Error("errors.invalid_budget_payload");
     }
     try {
       return await mutateBudget("/budgets", "POST", payload);
@@ -132,7 +132,7 @@ export function BudgetsProvider({ children }) {
       !Number.isFinite(payload.limit) ||
       payload.limit < 0.01
     ) {
-      throw new Error("Invalid budget payload.");
+      throw new Error("errors.invalid_budget_payload");
     }
     const key = String(id || "");
     return mutateBudget(`/budgets/${key}`, "PUT", payload);

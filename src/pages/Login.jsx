@@ -9,22 +9,47 @@ const BASE = import.meta.env.VITE_API_URL || "http://localhost:4000/api";
 const googleSignIn = () => { window.location.href = `${BASE}/auth/google`; };
 
 export default function Login() {
-  const { login, user } = useAuth();
+  const { login } = useAuth();
   const navigate = useNavigate();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [loading, setLoading] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
   const { t } = useSettings();
+  const resolveLoginErrorKey = (rawMessage) => {
+    const message = String(rawMessage || "").trim();
+    if (!message) return "auth.login_failed";
 
-useEffect(() => {
-  const m = (window.location.hash || "").match(/token=([^&]+)/);
-  if (m && m[1]) {
-    localStorage.setItem("jwt", m[1]);    
-    window.history.replaceState(null, "", window.location.pathname + window.location.search);
-    navigate("/dashboard");
-  }
-}, [navigate]);
+    if (message.startsWith("auth.") || message.startsWith("errors.")) {
+      return message;
+    }
+
+    const map = {
+      "Invalid credentials": "auth.invalid_credentials",
+      "Email and password are required": "errors.fill_all_fields",
+      "Email is required": "errors.required",
+      "Password is required": "errors.required",
+      "Invalid email": "errors.invalid_email",
+      "Server error": "auth.login_server_error",
+      "Login failed": "auth.login_failed",
+      "Unauthorized": "auth.login_failed",
+    };
+
+    return map[message] || "auth.login_failed";
+  };
+
+  useEffect(() => {
+    const m = (window.location.hash || "").match(/token=([^&]+)/);
+    if (m && m[1]) {
+      localStorage.setItem("jwt", m[1]);
+      window.history.replaceState(
+        null,
+        "",
+        window.location.pathname + window.location.search,
+      );
+      navigate("/dashboard");
+    }
+  }, [navigate]);
 
 
   const onSubmit = async (e) => {
@@ -34,7 +59,10 @@ useEffect(() => {
       await login({ email, password });
       navigate("/dashboard");
     } catch (err) {
-      alert(err.message || "Login failed");
+      const message = err instanceof Error ? err.message : err;
+      const key = resolveLoginErrorKey(message);
+      const localized = t(key);
+      alert(localized === key ? t("auth.login_failed") : localized);
     } finally {
       setLoading(false);
     }

@@ -15,7 +15,8 @@
     "test:client": "vitest run",
     "test:client:watch": "vitest",
     "test:client:cov": "vitest run --coverage",
-    "test:cov": "npm run test:server:cov && npm run test:client:cov"
+    "test:cov": "npm run test:server:cov && npm run test:client:cov",
+    "prepare": "husky"
   },
   "dependencies": {
     "bootstrap": "^5.3.8",
@@ -47,7 +48,9 @@
     "eslint-plugin-react-hooks": "^5.2.0",
     "eslint-plugin-react-refresh": "^0.4.22",
     "globals": "^16.4.0",
+    "husky": "^9.1.7",
     "jsdom": "^27.0.1",
+    "lint-staged": "^15.5.2",
     "mocha": "^11.7.4",
     "nodemon": "^3.1.10",
     "nyc": "^17.1.0",
@@ -57,6 +60,11 @@
   },
   "overrides": {
     "vite": "npm:rolldown-vite@7.1.14"
+  },
+  "lint-staged": {
+    "*.{js,jsx,json,css}": [
+      "npm run lint -- --fix"
+    ]
   },
   "description": "This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.",
   "main": "eslint.config.js",

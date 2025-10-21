@@ -17,6 +17,7 @@ A modern web app for tracking personal finances: transactions, categories, month
 - [Features](#features)
 - [Architecture](#architecture)
 - [Tech Stack](#tech-stack)
+- [Repository Layout](#repository-layout)
 - [Getting Started](#getting-started)
   - [Requirements](#requirements)
   - [Environment Variables](#environment-variables)
@@ -25,6 +26,7 @@ A modern web app for tracking personal finances: transactions, categories, month
 - [Usage Guide](#usage-guide)
 - [Password Reset](#password-reset)
 - [Testing](#testing)
+- [Tooling & Automation](#tooling--automation)
 - [Deployment](#deployment)
 - [Devlog](#devlog)
 - [Future Improvements](#future-improvements)
@@ -77,10 +79,24 @@ A modern web app for tracking personal finances: transactions, categories, month
 
 ## Tech Stack
 
-- **Frontend:** React, Vite, React Router, React‑Bootstrap, Recharts, FileSaver, XLSX, ESLint.
-- **Backend:** Node.js, Express, MongoDB/Mongoose, Passport (JWT, Google OAuth), dotenv, CORS, Nodemailer.
-- **Testing:** (example) Mocha/Chai for unit tests (categories/budgets).
-- **Deployment:** Netlify/Vercel (frontend) + Render/Railway/Fly.io (backend).
+- **Frontend:** React 19, Vite, React Router, React‑Bootstrap, Recharts, FileSaver, XLSX.
+- **Backend:** Node.js, Express 5, MongoDB/Mongoose, Passport (JWT + Google OAuth), Brevo SDK, Zod.
+- **Testing:** Mocha, Chai, Supertest for API suites; Vitest + Testing Library for client; c8/nyc for coverage.
+- **Tooling:** ESLint 9, Husky + lint-staged pre-commit, GitHub Actions CI, npm workspaces.
+- **Deployment targets:** Netlify/Vercel (frontend) and Render/Railway/Fly.io (backend).
+
+## Repository Layout
+
+```
+nest-egg/
+├── src/                 # React app (pages, contexts, components, i18n)
+├── server/              # Express API, Mongoose models, Passport auth, tests
+├── docs/                # Screenshots and snippet archives
+├── .github/workflows/   # GitHub Actions CI configuration
+├── .husky/              # Husky hook & lint-staged integration
+├── package.json         # Root workspace (client scripts, lint-staged config)
+└── devlog.md            # Development journal
+```
 
 ---
 
@@ -121,13 +137,41 @@ GOOGLE_CLIENT_SECRET=<your_google_client_secret>
 GOOGLE_CALLBACK_URL=https://nest-egg-tuwf.onrender.com/api/auth/google/callback
 
 # Email (Password Reset)
-SMTP_HOST=smtp.gmail.com
-SMTP_PORT=587
-SMTP_USER=your_email@gmail.com
-SMTP_PASS=your_app_password
+BREVO_API_KEY=<your_brevo_api_key>
+RESET_EMAIL_FROM="NestEgg <no-reply@example.com>"
+RESET_EMAIL_URL=https://your-frontend/reset
 RESET_TOKEN_EXPIRES_MIN=60
 APP_BASE_URL=https://your-nest-egg.onrender.com
 ```
+
+### Frontend (React + Vite)
+
+```bash
+# Install dependencies (root + server workspace)
+npm install
+
+# Start the client dev server (http://localhost:5173)
+npm run dev
+```
+
+- Uses Vite for fast HMR.
+- Reads `VITE_API_URL` to communicate with the API.
+- Client tests: `npm run test:client` (Vitest).
+
+### Backend (Nodejs + Express + MongoDB)
+
+```bash
+# Run from repository root via npm workspaces
+npm run dev --workspace server
+
+# or inside the folder
+cd server && npm run dev
+```
+
+- REST API on `http://localhost:4000/api`.
+- Requires MongoDB credentials configured in `server/.env`.
+- Server tests: `npm run test:server`.
+
 
 ---
 
@@ -181,10 +225,23 @@ Body: { "email": "user@example.com", "token": "string", "newPassword": "secret12
 
 ## Testing
 
-```bash
-npm run test
-```
-Covers categories, budgets, and authentication logic (register/login/reset).
+- `npm run test:server` — Mocha + Supertest suites for API routes (categories, budgets, auth).
+- `npm run test:client` — Vitest + Testing Library components/interactions.
+- `npm run test` — convenience command that runs both server and client suites.
+- `npm run lint` — ESLint 9 with React, hooks, and refresh plugins.
+
+---
+
+## Tooling & Automation
+
+- **GitHub Actions** workflow (`.github/workflows/ci.yml`) runs on every push/PR:
+  - `npm ci`
+  - `npm run test:server`
+  - `npm run test:client` (auto-skipped if the script is removed)
+  - `npm run lint`
+- **Husky pre-commit** executes `lint-staged` to auto-fix staged `*.{js,jsx,json,css}` files with ESLint.
+- **npm scripts** expose shared tasks (`npm run dev`, `npm run dev --workspace server`, `npm run test`, etc.).
+- **ESLint config** lives at the repo root (`eslint.config.js`) and is shared by the hook and CI.
 
 ---
 
@@ -221,7 +278,7 @@ A detailed development log is available in the file
 ## Screenshots
 
 All weekly screenshots and visual progress reports are available in the folder  
-[`/docs/screenshots/`](./docs/screenshots)
+[`/docs/screenshots/`](./docs/screenshots) — code snippets live alongside in [`/docs/snippets/`](./docs/snippets)
 
 ## Security & Privacy
 

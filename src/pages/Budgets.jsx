@@ -15,6 +15,37 @@ export default function Budgets() {
   const { transactions } = useTransactions();
   const { budgets, addBudget, updateBudget, removeBudget } = useBudgets();
   const { t, formatCurrency, settings } = useSettings();
+  const resolveBudgetErrorKey = (rawMessage) => {
+    const message = String(rawMessage || "").trim();
+    if (!message) return "errors.budget_save_failed";
+
+    if (
+      message.startsWith("errors.") ||
+      message.startsWith("budgets.") ||
+      message.startsWith("auth.")
+    ) {
+      return message;
+    }
+
+    const map = {
+      "Invalid budget identifier.": "errors.invalid_budget_identifier",
+      "Invalid budget payload.": "errors.invalid_budget_payload",
+      "Invalid user id.": "errors.invalid_budget_payload",
+      "Invalid id": "errors.invalid_budget_identifier",
+      "Budget already exists for this category and month.": "budgets.multiple_error",
+      "Not found": "errors.budget_not_found",
+      "Validation failed.": "errors.invalid_budget_payload",
+      "Bad payload": "errors.invalid_budget_payload",
+      "Failed to create budget.": "errors.budget_save_failed",
+      "Failed to update budget.": "errors.budget_save_failed",
+      "HTTP 400": "errors.invalid_budget_payload",
+      "HTTP 404": "errors.budget_not_found",
+      "HTTP 409": "budgets.multiple_error",
+      "HTTP 500": "errors.budget_save_failed",
+    };
+
+    return map[message] || "errors.budget_save_failed";
+  };
 
   function getCurrentYear() {
     return String(new Date().getFullYear());
@@ -173,14 +204,17 @@ alert(t("errors.limit_min"))
       const payload = { categoryId: form.categoryId, month, limit };
       if (editing) {
         const id = editing._id || editing.id;
-        if (!id) throw new Error("Invalid budget identifier.");
+        if (!id) throw new Error("errors.invalid_budget_identifier");
         await updateBudget(id, payload);
       } else {
         await addBudget(payload);
       }
       close();
     } catch (e) {
-      alert(e.message || "Failed to save budget.");
+      const message = e instanceof Error ? e.message : e;
+      const key = resolveBudgetErrorKey(message);
+      const localized = t(key);
+      alert(localized === key ? t("errors.budget_save_failed") : localized);
     } finally {
       setSaving(false);
     }

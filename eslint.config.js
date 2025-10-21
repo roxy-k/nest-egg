@@ -8,6 +8,7 @@ export default defineConfig([
   globalIgnores([
     'dist',
     'coverage/**',
+    'server/coverage/**',
     '.nyc_output/**',
     'docs/snippets/**',
     'docs/screenshots/**',

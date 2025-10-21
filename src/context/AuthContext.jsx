@@ -3,6 +3,24 @@ import React, { createContext, useCallback, useContext, useEffect, useRef, useSt
 const AuthContext = createContext();
 const BASE = import.meta.env.VITE_API_URL || "http://localhost:4000/api";
 const REFRESH_TIMEOUT_MS = Number(import.meta.env.VITE_AUTH_TIMEOUT_MS || 8000);
+const isBrowser = typeof window !== "undefined";
+const isDev = Boolean(import.meta.env && import.meta.env.DEV);
+
+const reportStorageError = (err) => {
+  if (isDev) {
+    console.warn("Auth storage access failed:", err);
+  }
+};
+
+const getStorage = () => {
+  if (!isBrowser) return null;
+  try {
+    return window.localStorage;
+  } catch (err) {
+    reportStorageError(err);
+    return null;
+  }
+};
 
 async function fetchWithTimeout(resource, options = {}, timeoutMs = REFRESH_TIMEOUT_MS) {
   const controller = new AbortController();
@@ -15,10 +33,34 @@ async function fetchWithTimeout(resource, options = {}, timeoutMs = REFRESH_TIME
 }
 
 export const getToken = () => {
-  try { return localStorage.getItem("jwt") || ""; } catch { return ""; }
+  const storage = getStorage();
+  if (!storage) return "";
+  try {
+    return storage.getItem("jwt") || "";
+  } catch (err) {
+    reportStorageError(err);
+    return "";
+  }
 };
-const setToken = (t) => { try { if (t) localStorage.setItem("jwt", t); } catch {} };
-const clearToken = () => { try { localStorage.removeItem("jwt"); } catch {} };
+const setToken = (token) => {
+  if (!token) return;
+  const storage = getStorage();
+  if (!storage) return;
+  try {
+    storage.setItem("jwt", token);
+  } catch (err) {
+    reportStorageError(err);
+  }
+};
+const clearToken = () => {
+  const storage = getStorage();
+  if (!storage) return;
+  try {
+    storage.removeItem("jwt");
+  } catch (err) {
+    reportStorageError(err);
+  }
+};
 export function useAuth() {
   return useContext(AuthContext);
 }
@@ -101,7 +143,7 @@ export function AuthProvider({ children }) {
     const data = await res.json().catch(() => ({}));
     if (!res.ok) throw new Error(data.error || "Login failed");
     if (data.token) {
-      setToken(data.token); // Keep Safari in sync
+      setToken(data.token);
     }
     const u = normalizeUser(data);
     setUser(u);

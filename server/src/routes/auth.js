@@ -150,10 +150,14 @@ router.post("/register", async (req, res) => {
 
 router.post("/login", async (req, res) => {
   try {
-    const { email, password } = req.body || {};
-    if (!email || !password) {
-      return res.status(400).json({ error: "Email and password are required" });
+    const parsed = loginSchema.safeParse(req.body);
+    if (!parsed.success) {
+      const msg =
+        parsed.error.errors?.[0]?.message || "Email and password are required";
+      return res.status(400).json({ error: msg });
     }
+
+    const { email, password } = parsed.data;
 
     const user = await User.findOne({ email });
     if (!user || !user.passwordHash) {
@@ -358,7 +362,8 @@ router.get(
 
       const targetBase = (CLIENT || "").replace(/\/$/, "");
       return res.redirect(`${targetBase}/oauth#token=${encodeURIComponent(token)}`);
-    } catch (e) {
+    } catch (err) {
+      console.error("Google OAuth callback failed:", err);
       return res.redirect((CLIENT || "") + "/login?err=google");
     }
   }

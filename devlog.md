@@ -2,7 +2,7 @@
 
 A running log of the NestEgg capstone project: weekly updates, challenges, solutions, key learnings, and milestone screenshots/code snippets.
 
-> **Scope:** Full‑stack budget tracker (React + Vite, Node/Express, MongoDB), i18n (EN/FR), theming, auth (email + Google OAuth), reports, budgets, and Excel export.  
+> **Scope:** Full-stack budget tracker (React + Vite, Node/Express, MongoDB), i18n (EN/FR), theming, auth (email + Google OAuth), reports, budgets, and Excel export.  
 > **Owner:** Oksana Katysheva  
 > **Repo:** https://github.com/roxy-k/nest-egg  
 > **Live:** Frontend — https://your-nest-egg.onrender.com  
@@ -10,128 +10,116 @@ A running log of the NestEgg capstone project: weekly updates, challenges, solut
 
 ---
 
-## Week 1 — Planning & Setup
+## Week 1 — Planning & Foundations
 
 ### Goals
-- Draft the project proposal (idea, audience, features, tech stack).
-- Initialize mono‑repo (or two folders: `/frontend` and `/backend`).
-- Bootstrap **Vite + React** app and **Express** API.
-- Add base **Contexts**: `AuthContext`, `SettingsContext`.
-- Configure ESLint, Git hooks, `.gitignore`, environment variables.
+- Finalize project scope (audience, features, tech stack).
+- Bootstrap the workspace (Vite + React client, Express API).
+- Lay down global contexts for settings and auth.
+- Establish tooling: ESLint, Git hooks, environment files.
 
 ### What I did
-- Finalized proposal and folder structure.
-- Set up Vite, React Router, Bootstrap.
-- Implemented `SettingsContext` with theme & i18n provider (`t()` helper).
-- Created `AuthContext` skeleton (login/register/logout stubs).
-- Configured Express with `/api` prefix and CORS for frontend origin.
-- Prepared `.env.example`.
+- Created the mono-repo structure with shared `package.json` and workspaces.
+- Scaffolded the Vite app with React Router, Bootstrap, and baseline pages.
+- Implemented `SettingsContext` with theme + i18n support, and a stubbed `AuthContext`.
+- Brought up Express with `/api` prefix, CORS, and placeholder routes.
+- Documented required environment variables (`.env.example`).
 
 ### Challenges & Solutions
-- **CORS with cookies:** Needed `credentials: true` and explicit `origin` on server.  
-  ✅ **Solution:** Configured CORS with `credentials: true`, `origin: CLIENT_URL`; frontend uses `credentials: 'include'`.
-- **Folder boundaries:** Kept frontend and backend separate to simplify deploy & CI.
+- **CORS with cookies:** initial requests dropped cookies.  
+  ✅ Configured CORS with `credentials: true`, explicit `origin`, and matching client fetch options.
+- **Structure decisions:** keeping client/server manageable.  
+  ✅ Adopted a single repo with workspaces to ease CI and deployments.
 
 ### Key Learnings
-- Keep i18n minimal early; grow gradually.
-- Theme switching with `data-bs-theme` is clean and scalable.
+- Start with minimal i18n hooks and grow dictionaries gradually.
+- Theme switching via `data-bs-theme` scales cleanly with Bootstrap.
 
 ---
 
-## Week 2 — Core Features (Categories & Transactions)
+## Week 2 — Categories & Transactions
 
 ### Goals
-- CRUD for **Categories** (income/expense, slug/id).
-- CRUD for **Transactions** with filters, search, sorting.
-- Validation and `sanitizeAmount` logic.
-- Move user-facing messages to i18n.
+- Build CRUD flows for categories (income/expense, slug/ID).
+- Add transaction management with filters, sorting, and search.
+- Harden amount inputs and validation logic.
+- Move all user-facing strings into translation dictionaries.
 
 ### What I did
-- Categories: form + table; slug validation.
-- Transactions: add/edit/delete; filtering and sorting.
-- Introduced `sanitizeAmount` + paste handling.
-- Unified mixed IDs using `(doc._id || doc.id)`.
+- Completed categories UI + validation, including unique slug enforcement.
+- Delivered transaction add/edit/delete plus filters (month/category/type) and search.
+- Added `sanitizeAmount`, paste guards, and numeric input blocking to keep values clean.
+- Normalized IDs across mock data and Mongo (`doc._id || doc.id`).
+- Localized newly exposed strings inside `en.json`/`fr.json`.
 
 ### Challenges & Solutions
-- **Mixed IDs:** inconsistent between mock and DB.  
-  ✅ **Solution:** always use `(doc._id || doc.id)`.
-- **Input UX:** commas/spaces allowed.  
-  ✅ **Solution:** sanitize on change and prevent invalid input.
+- **Mixed identifiers:** mocks vs. DB returned different keys.  
+  ✅ Always rely on `(doc._id || doc.id)` when mapping objects.
+- **Flexible amounts:** users pasted text with commas/spaces.  
+  ✅ Sanitized inputs on every change and prevented invalid keystrokes.
 
 ### Key Learnings
-- Centralized validation with i18n improves consistency.
-- Sorting must use locale-aware comparison for names.
+- Centralizing validation keeps UI consistent and reduces regressions.
+- Locale-aware string comparisons are important when sorting category names.
 
 ---
 
-## Week 3 — Budgets & Reports
+## Week 3 — Budgets, Reports & Auth
 
 ### Goals
-- Monthly budgets per category.
-- Reports (Pie/Bar charts).
-- Excel export of transactions.
+- Introduce monthly budgets per category with progress indicators.
+- Visualize trends with Reports (Pie/Bar charts) and Excel export.
+- Ship authentication flows (email/password + Google OAuth).
+- Polish navigation, theming, and localization coverage.
 
 ### What I did
-- Implemented budgets page with progress bars.
-- Added Recharts (Pie/Bar) to Reports.
-- Excel export using `xlsx` + `file-saver` with localized headers.
+- Built the Budgets page: CRUD, progress bars, and over-limit cues.
+- Added Recharts-based visualizations (expenses by category, income trends).
+- Implemented Excel export using `xlsx` + `file-saver`.
+- Integrated Passport for JWT + Google OAuth, refreshed navbar states, and completed localized auth pages.
+- Tweaked layout accessibility and ensured theme/i18n toggles work end-to-end.
 
 ### Challenges & Solutions
-- **Missing i18n keys** for headers.  
-  ✅ **Solution:** added `common.date/category/type/amount` keys.
+- **Missing i18n keys:** new UI strings slipped through.  
+  ✅ Audited and expanded translation dictionaries before shipping.
+- **Prod cookie behavior:** SameSite/Secure mismatches broke login.  
+  ✅ Applied conditional cookie options (Secure + `SameSite=None` in production, lax locally).
+- **OAuth redirect flow:** inconsistent token refresh on callback.  
+  ✅ Added `/oauth` handling to store tokens and trigger `refresh()` reliably.
 
 ### Key Learnings
-- Memoize aggregates to avoid rerenders.
-- Localize all empty states and labels.
+- Memoizing aggregated data keeps charts and tables snappy.
+- Precise auth UX (navbar, redirects) dramatically improves perceived quality.
 
 ---
 
-## Week 4 — Auth, Polish & i18n
+## Week 4 — Testing, Deployment & Automation
 
 ### Goals
-- Email/password + Google OAuth login.
-- Localize auth strings (“Continue with Google”, etc.).
-- Navbar states, logout, and minor accessibility tweaks.
+- Add test suites for critical backend and frontend flows.
+- Deploy production instances and verify HTTPS/cookie/i18n scenarios.
+- Implement password reset, better error messaging, and localization QA.
+- Automate quality gates with CI and pre-commit hooks.
 
 ### What I did
-- Integrated Passport (JWT + Google OAuth).
-- Localized `Login`, `Register`, and `OAuth` pages.
-- Improved Navbar state (auth vs guest).
+- Wrote Mocha/Chai/Supertest tests for categories and budgets; added Vitest component tests.
+- Deployed backend (Render) and frontend (Render), validating CORS + HTTPS behavior.
+- Implemented password reset via email with hashed tokens (Brevo API integration).
+- Refined alerts to map backend errors to translation keys in Budgets/Login; updated dictionaries accordingly.
+- Introduced GitHub Actions workflow (`npm ci`, server tests, optional client tests, lint) and Husky + lint-staged pre-commit hook.
 
 ### Challenges & Solutions
-- **Cookies in prod:** Secure/SameSite inconsistencies.  
-  ✅ **Solution:** applied conditional cookie flags and HTTPS.
-- **OAuth redirect:** ensured `/oauth` route refreshes token and navigates properly.
+- **Prod CORS issues:** mismatched origins blocked credentials.  
+  ✅ Matched exact domains and enabled credentials in both client and server configs.
+- **Safari OAuth edge cases:** cookies sometimes blocked after Google redirect.  
+  ✅ Added hash-token redirect fallback and `Authorization` header refresh.
+- **Conditional CI steps:** client tests/lint should skip if scripts absent.  
+  ✅ Detected scripts via Node helper and exported flags for workflow conditions.
 
 ### Key Learnings
-- Small UX details improve perceived quality.
-- Centralized refresh logic in `AuthContext` simplifies flow.
-
----
-
-## Week 5 — Testing, Deployment & Final Polish
-
-### Goals
-- Unit tests for categories/budgets.
-- Production deployment (Frontend + API).
-- Verify i18n coverage and consistency.
-- Add password reset and finalize README/Devlog.
-
-### What I did
-- Added unit tests (category slug, budget validation).
-- Deployed backend (Render) and frontend (Netlify).
-- Verified HTTPS, CORS, and cookie policies.
-- Implemented **Password Reset via email link** using Nodemailer + tokens.
-
-### Challenges & Solutions
-- **CORS in prod:** mismatched origins blocked cookies.  
-  ✅ **Solution:** matched origins exactly and enabled credentials.
-- **Safari OAuth:** cookies blocked in some cases.  
-  ✅ **Solution:** switched to hash-token redirect (`/#token=`) and Bearer `/auth/me` flow.
-
-### Key Learnings
-- Test full auth flow on real HTTPS domains.
-- Deployment checklists prevent missed config errors.
+- Testing full auth and reset flows on real domains catches cookie/security surprises early.
+- Automated lint/tests (CI + pre-commit) keep the repo clean without extra ceremony.
+- Translation-first error handling prevents last-minute copy mismatches.
 
 ---
 
@@ -167,7 +155,7 @@ A running log of the NestEgg capstone project: weekly updates, challenges, solut
 ## Screenshots
 
 All milestone and weekly screenshots are available in the folder  
-[`/docs/screenshots/`](./docs/screenshots)
+[`/docs/screenshots/`](./docs/screenshots) — related code snippets live in [`/docs/snippets/`](./docs/snippets)
 
 ---
 
@@ -180,8 +168,6 @@ All milestone and weekly screenshots are available in the folder
 
 ---
 
-## Devlog: Last Update — “Deployment & Lessons Learned”
+## Devlog: Last Update — “Shipping with Confidence”
 
-In the final stage, the project was successfully deployed on Render (backend) and Render(frontend).  
-Key lessons learned include: the importance of testing OAuth and cookie flows under real HTTPS conditions, maintaining strict environment variable consistency between services, and documenting every setup step for easier debugging.  
-The overall result is a stable, production-ready budgeting app with clear structure, localization, and secure authentication.
+The latest pass focused on production hardening—wrapping up localization gaps, strengthening authentication flows, and wiring automated checks so regressions surface quickly. With deployments running, Husky + lint-staged guarding commits, and GitHub Actions mirroring local tests, the project now has a tight build–verify–ship loop. Future features can land faster without sacrificing stability.

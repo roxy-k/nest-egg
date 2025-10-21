@@ -252,7 +252,7 @@ bv = (categories.find((c) => (c._id || c.id) === b.categoryId)?.name || b.catego
       <Button size="sm" variant="outline-secondary" onClick={() => openEdit(tx)}>
         {t("common.edit")}
       </Button>
-      <Button size="sm" variant="outline-danger" onClick={() => removeTransaction(tx._id)}>
+      <Button size="sm" variant="outline-danger" onClick={() => removeTransaction(tx._id || tx.id)}>
         {t("common.delete")}
       </Button>
     </div>

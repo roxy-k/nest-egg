@@ -159,7 +159,11 @@
     "name_and_id": "Fill in both Name and ID (slug).",
     "slug_in_use": "This ID (slug) is already in use. Choose another one.",
     "limit_min": "Limit must be at least 0.01.",
-    "limit_positive": "Limit must be a positive number."
+    "limit_positive": "Limit must be a positive number.",
+    "invalid_budget_payload": "Budget data is invalid. Please check the fields.",
+    "invalid_budget_identifier": "Budget identifier is missing or invalid.",
+    "budget_save_failed": "Couldn't save the budget. Please try again.",
+    "budget_not_found": "Budget could not be found."
   },
   "auth": {
     "login": "Log in",
@@ -184,6 +188,9 @@
     "reset_success": "Password updated. Redirecting…",
     "reset_email_disabled": "Password emails are not configured. Please contact support.",
     "reset_email_failed": "We couldn't send the reset email. Please try again.",
-    "reset_email_timeout": "Sending the reset email timed out. Please retry in a moment."
+    "reset_email_timeout": "Sending the reset email timed out. Please retry in a moment.",
+    "login_failed": "Unable to log in. Please try again.",
+    "invalid_credentials": "Email or password is incorrect.",
+    "login_server_error": "Server error while logging in. Please try again."
   }
 }

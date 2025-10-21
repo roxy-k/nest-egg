@@ -70,15 +70,22 @@
     "limit": "Limite",
     "spent": "Dépensé",
     "empty": "Aucun budget pour le moment",
-    "select_category": "Sélectionner une catégorie"
+    "select_category": "Sélectionner une catégorie",
+    "multiple_error": "Un budget existe déjà pour cette catégorie et ce mois."
 },
 "errors": {
+  "required": "Champ obligatoire",
+  "invalid_email": "Email invalide.",
   "fill_all_fields": "Veuillez remplir tous les champs !",
   "amount_positive": "Le montant doit être un nombre positif.",
   "name_and_id": "Renseignez le nom et l’identifiant (slug).",
   "slug_in_use": "Cet identifiant (slug) est déjà utilisé. Choisissez-en un autre.",
   "limit_min": "La limite doit être au moins 0,01.",
-  "limit_positive": "La limite doit être un nombre positif."
+  "limit_positive": "La limite doit être un nombre positif.",
+  "invalid_budget_payload": "Les données du budget sont invalides. Vérifiez les champs.",
+  "invalid_budget_identifier": "L'identifiant du budget est manquant ou invalide.",
+  "budget_save_failed": "Impossible d'enregistrer le budget. Réessayez.",
+  "budget_not_found": "Budget introuvable."
 },
 
   
@@ -148,6 +155,9 @@
     "reset_success": "Mot de passe mis à jour. Redirection…",
     "reset_email_disabled": "L'envoi d'e-mails de réinitialisation n'est pas configuré. Contactez le support.",
     "reset_email_failed": "Impossible d'envoyer l'e-mail de réinitialisation. Réessayez.",
-    "reset_email_timeout": "L'envoi de l'e-mail a expiré. Réessayez dans un instant."
+    "reset_email_timeout": "L'envoi de l'e-mail a expiré. Réessayez dans un instant.",
+    "login_failed": "Connexion impossible. Réessayez.",
+    "invalid_credentials": "Email ou mot de passe incorrect.",
+    "login_server_error": "Erreur serveur lors de la connexion. Réessayez."
   }
 }
