@@ -1,5 +1,5 @@
-import React from "react";
-import { Card, Form, Alert } from "react-bootstrap";
+import React, { useMemo } from "react";
+import { Card, Form, Alert, Dropdown } from "react-bootstrap";
 import { ResponsiveContainer, PieChart, Pie, Cell, Tooltip, Legend } from "recharts";
 
 const COLORS = ["#8884d8", "#82ca9d", "#ffc658", "#ff7f50", "#00c49f", "#0088fe", "#ffbb28"];
@@ -21,18 +21,41 @@ function ExpenseTooltip({ active, payload, t, formatCurrency }) {
   );
 }
 
-export default function ExpenseByCategorySection({ t, month, onMonthChange, expenseData, formatCurrency }) {
+export default function ExpenseByCategorySection({ t, month, onMonthChange, availableMonths, expenseData, formatCurrency }) {
+  const monthFormatter = useMemo(
+    () =>
+      new Intl.DateTimeFormat(undefined, {
+        month: "long",
+        year: "numeric",
+      }),
+    []
+  );
+
+  const formatMonthLabel = (value) => {
+    if (!value) return t("reports.select_month");
+    const parsed = new Date(`${value}-01T00:00:00`);
+    if (Number.isNaN(parsed.getTime())) return value;
+    return monthFormatter.format(parsed);
+  };
+
   return (
     <Card className="h-100">
       <Card.Body>
         <Card.Title>{t("reports.expenses_by_category")}</Card.Title>
         <Form.Group className="mb-3">
           <Form.Label>{t("reports.select_month")}</Form.Label>
-          <Form.Control
-            type="month"
-            value={month}
-            onChange={(e) => onMonthChange(e.target.value)}
-          />
+          <Dropdown onSelect={(value) => value && onMonthChange(value)}>
+            <Dropdown.Toggle id="reports-month-toggle" variant="outline-secondary" className="w-100 text-start">
+              {formatMonthLabel(month)}
+            </Dropdown.Toggle>
+            <Dropdown.Menu className="w-100" style={{ maxHeight: 260, overflowY: "auto" }}>
+              {availableMonths.map((value) => (
+                <Dropdown.Item eventKey={value} key={value} active={value === month}>
+                  {formatMonthLabel(value)}
+                </Dropdown.Item>
+              ))}
+            </Dropdown.Menu>
+          </Dropdown>
         </Form.Group>
 
         {expenseData.length === 0 ? (

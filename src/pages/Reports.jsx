@@ -28,6 +28,18 @@ export default function Reports() {
     return `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, "0")}`;
   });
 
+  const availableMonths = useMemo(() => {
+    const months = new Set();
+    for (const t of transactions) {
+      const m = monthKey(t.date);
+      if (m) months.add(m);
+    }
+
+    if (month) months.add(month);
+
+    return [...months].sort((a, b) => b.localeCompare(a));
+  }, [transactions, month]);
+
   const expenseData = useMemo(() => {
     const map = new Map();
     for (const t of transactions) {
@@ -67,6 +79,7 @@ export default function Reports() {
               t={t}
               month={month}
               onMonthChange={setMonth}
+              availableMonths={availableMonths}
               expenseData={expenseData}
               formatCurrency={formatCurrency}
             />
