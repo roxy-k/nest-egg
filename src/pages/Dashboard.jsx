@@ -19,7 +19,7 @@ const CURRENT_MONTH = `${now.getFullYear()}-${String(now.getMonth() + 1).padStar
 
 function StatCard({ title, value, sub }) {
   return (
-    <Card className="h-100 shadow-sm">
+    <Card className="h-100 shadow-sm interactive-card">
       <Card.Body>
         <div className="text-muted mb-2">{title}</div>
         <div className="display-6 fw-semibold">{value}</div>
@@ -113,9 +113,9 @@ const { t, formatCurrency } = useSettings()
   }, [transactions, categories]);
 
   return (
-    <>
-<h1 className="mb-4">{t("dashboard.title")}</h1>
- {loadingAll && <div className="text-muted mb-3">{t("common.loading")}</div>}
+    <div className="page-enter">
+      <h1 className="mb-4">{t("dashboard.title")}</h1>
+      {loadingAll && <div className="text-muted mb-3">{t("common.loading")}</div>}
       <Row className="g-3">
         <Col md={4}>
           <StatCard
@@ -131,7 +131,7 @@ const { t, formatCurrency } = useSettings()
           />
         </Col>
         <Col md={4}>
-          <Card className="h-100 shadow-sm">
+          <Card className="h-100 shadow-sm interactive-card">
             <Card.Body>
               <div className="text-muted mb-2">{t("dashboard.budgets_current")}</div>
 <div className="fw-semibold mb-2">
@@ -149,7 +149,7 @@ const { t, formatCurrency } = useSettings()
 
       <Row className="g-3 mt-1">
         <Col md={7}>
-          <Card className="h-100 shadow-sm">
+          <Card className="h-100 shadow-sm interactive-card">
             <Card.Body>
 <Card.Title className="mb-3">{t("dashboard.expense_trend")}</Card.Title>             
  {last6.every((d) => d.value === 0) ? (
@@ -178,7 +178,7 @@ const { t, formatCurrency } = useSettings()
         </Col>
 
         <Col md={5}>
-          <Card className="h-100 shadow-sm">
+          <Card className="h-100 shadow-sm interactive-card">
             <Card.Body>
 <Card.Title className="mb-3">{t("dashboard.top_categories", { month: CURRENT_MONTH })}</Card.Title>
 {topCats.length === 0 ? (
@@ -205,6 +205,6 @@ const { t, formatCurrency } = useSettings()
           </Card>
         </Col>
       </Row>
-    </>
+    </div>
   );
 }

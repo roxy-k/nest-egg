@@ -1,6 +1,6 @@
 import React, { lazy, Suspense } from "react";
 import { Routes, Route, Navigate } from "react-router-dom";
-import { Container } from "react-bootstrap";
+import { Container, Alert } from "react-bootstrap";
 import { useAuth } from "./context/AuthContext.jsx";
 
 import AppNavbar from "./components/AppNavbar.jsx";
@@ -27,13 +27,18 @@ function PrivateRoute({ children }) {
 }
 
 export default function App() {
-  const { user, loading } = useAuth();
+  const { user, loading, error, clearError } = useAuth();
 
   return (
     <>
    
              <AppNavbar />
        <Container className="py-4">
+        {error ? (
+          <Alert variant="warning" dismissible onClose={clearError} className="mb-3">
+            {error}
+          </Alert>
+        ) : null}
         <Suspense fallback={<div className="text-center p-5">Loading…</div>}>
           <Routes>
              <Route path="/" element={<Navigate to="/dashboard" replace />} />

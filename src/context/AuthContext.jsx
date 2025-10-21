@@ -2,6 +2,17 @@ import React, { createContext, useCallback, useContext, useEffect, useRef, useSt
 
 const AuthContext = createContext();
 const BASE = import.meta.env.VITE_API_URL || "http://localhost:4000/api";
+const REFRESH_TIMEOUT_MS = Number(import.meta.env.VITE_AUTH_TIMEOUT_MS || 8000);
+
+async function fetchWithTimeout(resource, options = {}, timeoutMs = REFRESH_TIMEOUT_MS) {
+  const controller = new AbortController();
+  const timer = setTimeout(() => controller.abort(), timeoutMs);
+  try {
+    return await fetch(resource, { ...options, signal: controller.signal });
+  } finally {
+    clearTimeout(timer);
+  }
+}
 
 export const getToken = () => {
   try { return localStorage.getItem("jwt") || ""; } catch { return ""; }
@@ -15,6 +26,7 @@ export function useAuth() {
 export function AuthProvider({ children }) {
   const [user, setUser] = useState(null);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
   const userRef = useRef(null);
 
   const normalizeUser = (d) => (d && typeof d === "object" && "user" in d ? d.user : d);
@@ -23,15 +35,22 @@ export function AuthProvider({ children }) {
     async ({ silent = false } = {}) => {
       if (!silent) {
         setLoading(true);
+        setError(null);
       }
       try {
         const token = getToken();
         const headers = token ? { Authorization: `Bearer ${token}` } : {};
-        const res = await fetch(`${BASE}/auth/me`, {
+        const res = await fetchWithTimeout(`${BASE}/auth/me`, {
           credentials: "include",
           cache: "no-store",
           headers,
         });
+        if (res.status === 401) {
+          clearToken();
+          setUser(null);
+          userRef.current = null;
+          return null;
+        }
         const data = await res.json().catch(() => ({}));
         if (res.status === 304 && userRef.current) {
           return userRef.current;
@@ -46,6 +65,13 @@ export function AuthProvider({ children }) {
         console.warn("Auth refresh failed:", err.message);
         setUser(null);
         userRef.current = null;
+        if (!silent) {
+          const msg =
+            err?.name === "AbortError"
+              ? "Server is taking too long to respond. It may be waking up—please try again in a few seconds."
+              : err?.message || "Failed to contact server.";
+          setError(msg);
+        }
         return null;
       } finally {
         if (!silent) {
@@ -65,7 +91,8 @@ export function AuthProvider({ children }) {
   }, [refresh]);
 
   const login = async ({ email, password }) => {
-    const res = await fetch(`${BASE}/auth/login`, {
+    setError(null);
+    const res = await fetchWithTimeout(`${BASE}/auth/login`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       credentials: "include",
@@ -83,7 +110,8 @@ export function AuthProvider({ children }) {
   };
 
   const register = async ({ email, password, name = "" }) => {
-    const res = await fetch(`${BASE}/auth/register`, {
+    setError(null);
+    const res = await fetchWithTimeout(`${BASE}/auth/register`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       credentials: "include",
@@ -101,13 +129,14 @@ export function AuthProvider({ children }) {
   };
 
   const changePassword = async ({ currentPassword, newPassword }) => {
+    setError(null);
     const token = getToken();
     const headers = {
       "Content-Type": "application/json",
       ...(token ? { Authorization: `Bearer ${token}` } : {}),
     };
 
-    const res = await fetch(`${BASE}/auth/change-password`, {
+    const res = await fetchWithTimeout(`${BASE}/auth/change-password`, {
       method: "POST",
       headers,
       credentials: "include",
@@ -133,7 +162,8 @@ export function AuthProvider({ children }) {
   };
 
   const requestPasswordReset = async ({ email }) => {
-    const res = await fetch(`${BASE}/auth/request-reset`, {
+    setError(null);
+    const res = await fetchWithTimeout(`${BASE}/auth/request-reset`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       credentials: "include",
@@ -147,7 +177,8 @@ export function AuthProvider({ children }) {
   };
 
   const resetPassword = async ({ email, token, newPassword }) => {
-    const res = await fetch(`${BASE}/auth/reset-password`, {
+    setError(null);
+    const res = await fetchWithTimeout(`${BASE}/auth/reset-password`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       credentials: "include",
@@ -170,7 +201,8 @@ export function AuthProvider({ children }) {
 
   const logout = async () => {
     try {
-      await fetch(`${BASE}/auth/logout`, {
+      setError(null);
+      await fetchWithTimeout(`${BASE}/auth/logout`, {
         method: "POST",
         credentials: "include",
       });
@@ -181,9 +213,12 @@ export function AuthProvider({ children }) {
     }
   };
 
+  const clearError = useCallback(() => setError(null), []);
+
   const value = {
     user,
     loading,
+    error,
     login,
     register,
     logout,
@@ -191,6 +226,7 @@ export function AuthProvider({ children }) {
     changePassword,
     requestPasswordReset,
     resetPassword,
+    clearError,
   };
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
 }
