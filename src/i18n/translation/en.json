@@ -94,6 +94,7 @@
     "set": "Set Budget",
     "empty": "No budgets yet",
     "multiple_error": "Budget already exists for this category and month.",
+    "over_limit_confirm": "This expense exceeds your budget. Limit: {limit}. After saving: {projected} (over by {over}). Save anyway?",
     "select_category": "Select category"
   },
   "reports": {

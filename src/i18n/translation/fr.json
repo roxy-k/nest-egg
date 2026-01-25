@@ -71,7 +71,8 @@
     "spent": "Dépensé",
     "empty": "Aucun budget pour le moment",
     "select_category": "Sélectionner une catégorie",
-    "multiple_error": "Un budget existe déjà pour cette catégorie et ce mois."
+    "multiple_error": "Un budget existe déjà pour cette catégorie et ce mois.",
+    "over_limit_confirm": "Cette dépense dépasse votre budget. Limite : {limit}. Après enregistrement : {projected} (dépassement de {over}). Enregistrer quand même ?"
 },
 "errors": {
   "required": "Champ obligatoire",

@@ -2,6 +2,7 @@ import React, { useMemo, useState } from "react";
 import { Button, Table, Modal, Form, Badge, Row, Col, InputGroup } from "react-bootstrap";
 import { useCategories } from "../context/CategoriesContext.jsx";
 import { useTransactions } from "../context/TransactionsContext.jsx";
+import { useBudgets } from "../context/BudgetsContext.jsx";
 import { useSettings } from "../context/SettingsContext.jsx";
 import TransactionsExportExcel from "../components/TransactionsExportExcel.jsx";
 import { useNavigate } from "react-router-dom";
@@ -20,6 +21,7 @@ export default function Transactions() {
   const navigate = useNavigate();
   const { categories } = useCategories();
   const { transactions, addTransaction, removeTransaction, updateTransaction, loading } = useTransactions();
+  const { budgets } = useBudgets();
   const { t,formatCurrency } = useSettings();
 
   const [show, setShow] = useState(false);
@@ -84,6 +86,28 @@ const selected = categories.find((c) => (c._id || c.id) === value);
     event.preventDefault();
     setForm((prev) => ({ ...prev, amount: sanitizeAmount(text) }));
   };
+  const getBudgetCheck = (payload) => {
+    if (payload.type !== "expense") return null;
+    const month = monthKey(payload.date);
+    if (!month) return null;
+    const budget = budgets.find(
+      (b) => String(b.categoryId) === String(payload.categoryId) && b.month === month,
+    );
+    if (!budget) return null;
+    const limit = Number(budget.limit) || 0;
+    if (limit <= 0) return null;
+    let spent = 0;
+    for (const tx of transactions) {
+      const txId = tx._id || tx.id;
+      if (editId && String(txId) === String(editId)) continue;
+      if (tx.type !== "expense") continue;
+      if (String(tx.categoryId) !== String(payload.categoryId)) continue;
+      if (monthKey(tx.date) !== month) continue;
+      spent += Number(tx.amount) || 0;
+    }
+    const projected = spent + (Number(payload.amount) || 0);
+    return { limit, projected, overBy: projected - limit };
+  };
   const save = async () => {
    if (!form.date || !form.categoryId || !form.amount) {
 alert(t("errors.fill_all_fields"))
@@ -95,6 +119,17 @@ alert(t("errors.fill_all_fields"))
       return;
     }
     const payload = { date: form.date, categoryId: form.categoryId, type: form.type, amount: n };
+    const budgetCheck = getBudgetCheck(payload);
+    if (budgetCheck && budgetCheck.projected > budgetCheck.limit) {
+      const confirmMsg = t("budgets.over_limit_confirm", {
+        limit: formatCurrency(budgetCheck.limit),
+        projected: formatCurrency(budgetCheck.projected),
+        over: formatCurrency(budgetCheck.overBy),
+      });
+      if (!window.confirm(confirmMsg)) {
+        return;
+      }
+    }
 
     if (editId == null) {
       await addTransaction(payload);     
