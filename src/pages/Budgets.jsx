@@ -271,7 +271,8 @@ alert(t("errors.limit_min"))
             const cat = findCategoryById(b.categoryId);
             const used = spendByCatMonth.get(`${canonicalId}:${b.month}`) || 0;
             const limit = Number(b.limit) || 0;
-            const pct = limit > 0 ? Math.min(100, Math.round((used / limit) * 100 || 0)) : 0;
+            const pct = limit > 0 ? Math.round((used / limit) * 100 || 0) : 0;
+            const barPct = Math.min(100, Math.max(0, pct));
             const variant = pct < 70 ? "success" : pct < 100 ? "warning" : "danger";
             return (
                   <tr key={b._id || b.id}>
@@ -286,7 +287,7 @@ alert(t("errors.limit_min"))
                 <td className="text-end">{formatCurrency ? formatCurrency(b.limit) : `$${b.limit.toFixed(2)}`}</td>
                 <td className="text-end">{formatCurrency ? formatCurrency(used) : `$${used.toFixed(2)}`}</td>
                 <td>
-                  <ProgressBar now={pct} label={`${pct}%`} variant={variant} />
+                  <ProgressBar now={barPct} label={`${pct}%`} variant={variant} />
                 </td>
                 <td className="text-end">
                   <div className="d-inline-flex gap-2">

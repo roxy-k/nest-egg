@@ -70,11 +70,12 @@ const { t, formatCurrency } = useSettings()
       limit += Number(b.limit) || 0;
       used += usedMap.get(`${b.categoryId}:${b.month}`) || 0;
     }
-    const pct = limit > 0 ? Math.min(100, Math.round((used / limit) * 100)) : 0;
+    const pct = limit > 0 ? Math.round((used / limit) * 100) : 0;
     return { totalLimit: limit, totalUsed: used, totalPct: pct };
   }, [budgets, transactions]);
 
   const budgetVariant = totalPct < 70 ? "success" : totalPct < 100 ? "warning" : "danger";
+  const budgetBarPct = Math.min(100, Math.max(0, totalPct));
 
   const last6 = useMemo(() => {
     const labels = [];
@@ -141,7 +142,7 @@ const { t, formatCurrency } = useSettings()
   })}
 </div>
 
-              <ProgressBar now={totalPct} label={`${totalPct}%`} variant={budgetVariant} />
+              <ProgressBar now={budgetBarPct} label={`${totalPct}%`} variant={budgetVariant} />
             </Card.Body>
           </Card>
         </Col>

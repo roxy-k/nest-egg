@@ -79,14 +79,14 @@ export function AuthProvider({ children }) {
         setLoading(true);
         setError(null);
       }
-      try {
+      const doFetchMe = async (timeoutMs) => {
         const token = getToken();
         const headers = token ? { Authorization: `Bearer ${token}` } : {};
         const res = await fetchWithTimeout(`${BASE}/auth/me`, {
           credentials: "include",
           cache: "no-store",
           headers,
-        });
+        }, timeoutMs);
         if (res.status === 401) {
           clearToken();
           setUser(null);
@@ -103,15 +103,30 @@ export function AuthProvider({ children }) {
         setUser(u);
         userRef.current = u;
         return u;
+      };
+      let lastError;
+      try {
+        return await doFetchMe(REFRESH_TIMEOUT_MS);
       } catch (err) {
-        console.warn("Auth refresh failed:", err.message);
+        lastError = err;
+        if (!silent && err?.name === "AbortError" && !userRef.current) {
+          try {
+            const retryDelayMs = 1200;
+            const retryTimeoutMs = Math.max(REFRESH_TIMEOUT_MS, 12000);
+            await new Promise((resolve) => setTimeout(resolve, retryDelayMs));
+            return await doFetchMe(retryTimeoutMs);
+          } catch (retryErr) {
+            lastError = retryErr;
+          }
+        }
+        console.warn("Auth refresh failed:", lastError?.message);
         setUser(null);
         userRef.current = null;
         if (!silent) {
           const msg =
-            err?.name === "AbortError"
+            lastError?.name === "AbortError"
               ? "Server is taking too long to respond. It may be waking up—please try again in a few seconds."
-              : err?.message || "Failed to contact server.";
+              : lastError?.message || "Failed to contact server.";
           setError(msg);
         }
         return null;
