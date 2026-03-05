@@ -3,7 +3,6 @@ import { Navbar, Nav, Container, Button } from "react-bootstrap";
 import { NavLink, useNavigate } from "react-router-dom";
 import { useAuth } from "../context/AuthContext.jsx";
 import { useSettings } from "../context/SettingsContext.jsx";
-import logo from "../logo.png";
 
 export default function AppNavbar() {
   const { user, logout } = useAuth();
@@ -34,14 +33,20 @@ export default function AppNavbar() {
     >
       <Container>
         <Navbar.Brand href="/" className="d-flex align-items-center">
-          <img
-            src={logo}
-            alt="Nest Egg logo"
-            height="28"
-            loading="lazy"
-            className="me-2"
-            style={{ borderRadius: "6px" }}
-          />
+          <span
+            aria-hidden="true"
+            className="me-2 d-inline-flex align-items-center justify-content-center fw-bold"
+            style={{
+              width: "28px",
+              height: "28px",
+              borderRadius: "6px",
+              backgroundColor: isDark ? "#dee2e6" : "#212529",
+              color: isDark ? "#212529" : "#ffffff",
+              fontSize: "0.75rem"
+            }}
+          >
+            NE
+          </span>
           <span className="fw-semibold">Nest Egg</span>
         </Navbar.Brand>
         <Navbar.Toggle aria-controls="main-nav" />
